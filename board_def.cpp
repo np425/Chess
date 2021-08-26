@@ -204,7 +204,7 @@ void getMoves(SquareRef * sqr, vector<SquareRef*>& moves,
         // TODO: test if can move
         // Find pinned piece (the one that can be attacked) 
         while (navigate(x, y, xacc, yacc)) {
-            if (checks[player].empty() && preventsCheck(sqr, &board[y * BOARD_XSIZE + x])) 
+            if (preventsCheck(sqr, &board[y * BOARD_XSIZE + x])) 
                 moves.push_back(&board[y * BOARD_XSIZE + x]);
         }
 
@@ -213,7 +213,7 @@ void getMoves(SquareRef * sqr, vector<SquareRef*>& moves,
         coord = y * BOARD_XSIZE + x;
 
         if (!board[coord].piece || pieceToPlayer(board[coord].piece) != player) {
-            if (checks[coord].empty() && preventsCheck(sqr, &board[coord])) 
+            if (preventsCheck(sqr, &board[coord])) 
                 moves.push_back(&board[coord]);
         }
     }
@@ -252,7 +252,7 @@ void getMoves(SquareRef * sqr, vector<SquareRef*>& moves) {
                         if (!inBounds(tx, ty)) continue;
 
                         if (!board[target].piece || pieceToPlayer(board[target].piece) != player) {
-                            if (checks[player].empty() && preventsCheck(sqr, &board[target])) 
+                            if (preventsCheck(sqr, &board[target])) 
                                 moves.push_back(&board[target]);
                         }
                     }
@@ -276,8 +276,8 @@ void getMoves(SquareRef * sqr, vector<SquareRef*>& moves) {
                     }
 
                     // Ensure square is either empty or can be taken
-                    if (!board[target].piece || pieceToPlayer(board[target].piece != player)) {
-                        if (checks[player].empty() && preventsCheck(sqr, &board[target])) 
+                    if (!board[target].piece || pieceToPlayer(board[target].piece) != player) {
+                        if (preventsCheck(sqr, &board[target])) 
                             moves.push_back(&board[target]);
                     }
                 }
@@ -294,7 +294,7 @@ void getMoves(SquareRef * sqr, vector<SquareRef*>& moves) {
             target = coord + mov * BOARD_XSIZE;
             if (target >= 0 && target < BOARD_SIZE && !board[target].piece && !isPinnedToKing(sqr, 0, mov)) {
                 canMoveOnce = true;
-                if (checks[player].empty() && preventsCheck(sqr, &board[target])) 
+                if (preventsCheck(sqr, &board[target])) 
                     moves.push_back(&board[target]);
             }
             
@@ -306,7 +306,7 @@ void getMoves(SquareRef * sqr, vector<SquareRef*>& moves) {
             int my = (player == P_WHITE ? 1 : 6);
             
             if (cy == my && canMoveOnce && target >= 0 && target < BOARD_SIZE && !board[target].piece) {
-                if (checks[player].empty() && preventsCheck(sqr, &board[target])) 
+                if (preventsCheck(sqr, &board[target])) 
                     moves.push_back(&board[target]);
             }
             
@@ -318,7 +318,7 @@ void getMoves(SquareRef * sqr, vector<SquareRef*>& moves) {
 
                 if (!inBounds(tx, ty) || isPinnedToKing(sqr, x, mov)) continue;
                     
-                if (!checks[player].empty() && !preventsCheck(sqr, &board[target])) continue;
+                if (!preventsCheck(sqr, &board[target])) continue;
                 
                 // En passant
                 if (pawnPass[!player] == &board[coord + x] && !board[target].piece) {
