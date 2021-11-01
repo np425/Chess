@@ -1,380 +1,200 @@
 #include "notation.h"
-#include <iostream>
-#include <cstdlib>
-#include <algorithm>
-#include <cctype>
-#include <string>
-using namespace std;
 
-// TODO: Add promotion symbolic
+// ----------- Helper function prototypes
 
-//void strToLower(string &str) {
-//	for (char &chr : str) {
-//		if (chr >= 'A' && chr <= 'Z') chr += 32;
-//	}
-//}
+bool readX(char*& it, int &x);
+bool readY(char*& it, int &y);
+bool readCapture(char*& it, bool &capture);
+bool readOptFinalChecks(char*& it, bool &check, bool &checkmate);
 
-bool readX(const string& notation, string::iterator cur, int &x) {
-	if (cur == notation.end() || !(*cur >= 'a' && *cur <= 'h')) return false; 
-	x = *cur - 'a';
+bool readOptCaptureXY(char*& it, bool& capture, int& x, int& y);
+bool readOptPromoteFinalChecks(char*& it, PieceType& promote, bool& check, bool& checkmate);
+
+void textToLower(char* text);
+
+// ----------- Main functions
+bool translateNotation(char* notation, MoveInfo &move) {
+	textToLower(notation); // Lowercase notation
+
+	char* it = notation;
+
+    // Deduce piece types
+    if (*it == 'r') move.pieceType = PT_ROOK;
+    else if (*it == 'n') move.pieceType = PT_KNIGHT;
+    else if (*it == 'b') move.pieceType = PT_BISHOP;
+    else if (*it == 'q') move.pieceType = PT_QUEEN;
+    else if (*it == 'k') move.pieceType = PT_KING;
+    else if (readX(it, move.from.x)) { // If X is given, assume piece is a pawn
+        // Expect x->X->Y->(=p)->(+,#), Y->(=p)->(+,#), Y->(x)->X->Y->(=p)->(+,#)
+        move.pieceType = PT_PAWN;
+        if (readCapture(it, move.capture)) { // x->X->Y->(=p)->(+,#)
+			if (!readX(it, move.to.x) || !readY(it, move.to.y)) 
+				return false;
+            else
+				return readOptPromoteFinalChecks(it, move.promote, move.check, move.checkmate);
+        } else if (readY(it, move.from.y)) { // Y->(=p)->(+,#), Y->(x)->X->Y->(=p)->(+,#)
+			if (readOptCaptureXY(it, move.capture, move.to.x, move.to.y)) {
+				return readOptPromoteFinalChecks(it, move.promote, move.check, move.checkmate);
+            } else if (readOptPromoteFinalChecks(it, move.promote, move.check, move.checkmate)) {
+                // Invalidate origin coordinates
+                move.to.x = move.from.x;
+                move.to.y = move.from.y;
+                move.from = {-1,-1};
+                return true;
+			} else 
+				return false;
+        } else 
+			return false;
+    } else if (*it == 'o') { // Castling
+        // O-O(+,#); O-O-O(+,#)
+
+        //Expect -
+        ++it;
+        if (*it != '-') 
+			return false;
+
+        // Expect o: king side castle
+        ++it;
+        if (*it != 'o') 
+			return false;
+
+        ++it;
+		// Optional king side checks
+        if (readOptFinalChecks(it, move.check, move.checkmate)) {
+			move.castles[1] = true;
+			return true;
+		}
+            
+		// Expect -
+        else if (*it != '-') 
+			return false;
+
+		// Expect o: queen side castle
+        ++it;
+        if (*it != 'o') 
+			return false;
+
+		// Optional queen side checks
+        return (move.castles[0] = readOptFinalChecks(it, move.check, move.checkmate));
+    } else 
+		return false; // Unknown first character
+
+    // For all pieces except pawns (pawns are processed separately) continue here:
+
+    // Expects:
+    // x: X->Y->(+,#);
+    // X: (x)->X->Y->(+,#), Y(+,#), Y->(x)->X->Y->(+,#);
+    // Y: (x)->X->Y->(+,#)
+
+    ++it;
+    if (readCapture(it, move.capture)) { // Takes
+        // Expect X->Y->(+,#)
+		if (!readX(it, move.to.x) || !readY(it, move.to.y))
+			return false;
+		else 
+			return readOptFinalChecks(it, move.check, move.checkmate);
+    } else if (readX(it, move.from.x)) { // X
+        // Expect (x)->X->Y->(+,#) or Y->(+,#) or Y->(x)->X->Y->(+,#)
+        if (readY(it, move.from.y)) {
+            if (readOptFinalChecks(it, move.check, move.checkmate)) {
+                // Invalidate origin coordinates
+                move.to.x = move.from.x;
+                move.to.y = move.from.y;
+                move.from = {-1,-1};
+                return true;
+            } else if (readOptCaptureXY(it, move.capture, move.to.x, move.to.y)) {
+				return readOptFinalChecks(it, move.check, move.checkmate);
+			} else
+				return false;
+        } else if (readOptCaptureXY(it, move.capture, move.to.x, move.to.y)) {
+			return readOptFinalChecks(it, move.check, move.checkmate);
+		} else
+			return false;
+    } else if (readY(it, move.from.y)) { // Y coordinate
+        // Expect (x)->X->Y->(+,#)
+        if (readOptCaptureXY(it, move.capture, move.to.x, move.to.y)) {
+			return readOptFinalChecks(it, move.check, move.checkmate);
+		} else
+			return false;
+    } else 
+		return false;
+}
+
+// ----------- Elementary reading functions (input lowercase)
+bool readX(char*& it, int &x) {
+    if (*it < 'a' || *it > 'h') return false;
+	x = *it - 'a';
+
+	++it;
+    return true;
+}
+
+bool readY(char*& it, int &y) {
+    if (*it < '1' || *it > '8') return false;
+    y = *it - '1';
+
+	++it;
+    return true;
+}
+
+bool readCapture(char*& it, bool &capture) {
+    if (*it != 'x') return false;
+    capture = true;
+	
+	++it;
+    return true;
+}
+
+// Optional Checks, has to be the end of notation
+bool readOptFinalChecks(char*& it, bool &check, bool &checkmate) {
+    if (*it == '+') check = true;
+    else if (*it == '#') checkmate = true;
+	else return !(*it);
+
+	++it;
+
+    return !(*it);
+}
+
+bool readOptPromote(char*& it, PieceType& promote) {
+	if (*it != '=') return true;
+	else ++it;
+
+	switch (*it) {
+		case 'r': promote = PT_ROOK; break;
+		case 'b': promote = PT_BISHOP; break;
+		case 'n': promote = PT_KNIGHT; break;
+		case 'q': promote = PT_QUEEN; break;
+		default: --it; return false;
+	}
+
+	++it;
 	return true;
 }
 
-bool readY(const string& notation, string::iterator cur, int &y) {
-	if (cur == notation.end() || !(*cur >= '1' && *cur <= '8')) return false; 
-	y = *cur - '1';
-	return true;
-}
-
-bool readTakes(const string& notation, string::iterator cur, bool& takes) {
-	if (cur == notation.end() || *cur != 'x') return false;
-	takes = true;
-	return true;
-}
-
-bool readOptFinalChecks(const string& notation, string::iterator cur, bool& check, bool& checkmate) {
-	// Optional Checks, has to be the end
-	if (cur == notation.end()) return true;
-	else if (*cur == '+') check = true;
-	else if (*cur == '#') checkmate = true;
-	else return false;
+// ----------- Composite reading functions (input lowercase)
+bool readOptCaptureXY(char*& it, bool& capture, int& x, int& y) {
+	readCapture(it, capture);
 	
-	return (cur+1 == notation.end());
+	if (!readX(it, x)) return false;
+	else if (!readY(it, y)) it -= (1 + capture);
+	else return true;
+
+	return false;
 }
 
+bool readOptPromoteFinalChecks(char*& it, PieceType& promote, bool& check, bool& checkmate) {
+	readOptPromote(it, promote);
 
-// Fast(Multi) functions
-/////////////////////////////////////////
-bool readYOptChecks(const string& notation, string::iterator cur, int& y, bool&check, bool& checkmate) {
-	if (!readY(notation, cur, y)) return false;
-	++cur;
-	return (readOptFinalChecks(notation, cur, check, checkmate));
+	if (!readOptFinalChecks(it, check, checkmate)) it -= 2;
+	else return true;
+
+	return false;
 }
 
-bool readXYOptChecks(const string& notation, string::iterator cur, int& x, int& y, bool& check, bool& checkmate) {
-	// Expect X->Y(+,#)
-	if (!readX(notation, cur, x)) return false;
-	++cur;
-	return (readYOptChecks(notation, cur, y, check, checkmate));
+// ----------- Misc Functions
+void textToLower(char* text) {
+	for (char* c = text; *c; ++c) {
+		if (*c >= 'A' && *c <= 'Z') *c += 32;
+	}
 }
-
-bool readOptTakesXYOptChecks(const string& notation, string::iterator cur, bool takes, int& x, int& y, bool& check, bool& checkmate) {
-	if (readTakes(notation, cur, takes)) ++cur;
-	return (readXYOptChecks(notation, cur, x, y, check, checkmate));
-}
-///////////////////////////////////////////
-
-#define _BAD_NOTATION { info.badNotation = true; return; }
-
-// piece x, y; moves x, y
-void translateNotation(string notation, NotationInfo& info) {
-	//strToLower(notation);
-    transform(notation.begin(), notation.end(), notation.begin(),
-        [](unsigned char c) { return tolower(c); });
-	string::iterator cur = notation.begin();
-
-	// Deduce pieces
-	if (*cur == 'r') info.pieceType = P_ROOK;
-	else if (*cur == 'n') info.pieceType = P_KNIGHT;
-	else if (*cur == 'b') info.pieceType = P_BISHOP;
-	else if (*cur == 'q') info.pieceType = P_QUEEN;
-	else if (*cur == 'k') info.pieceType = P_KING;
-	else if (readX(notation, cur, info.px)) {
-		// Pawns processed separately
-		// Expect x->X->Y->(+,#), Y(+,#), Y->(x)->X->Y->(+,#)
-		// TODO: Promotion notation
-		info.pieceType = P_PAWN;
-		++cur;
-		if (readTakes(notation, cur, info.takes)) {
-			++cur;
-			if (!readXYOptChecks(notation, cur, info.mx, info.my, info.check, info.checkmate)) _BAD_NOTATION
-		} else if (readY(notation, cur, info.py)) {
-			++cur;
-			if (readOptFinalChecks(notation, cur, info.check, info.checkmate)) {
-				// Invalidate algebraic notation
-				info.mx = info.px;
-				info.my = info.py;
-				info.px = info.py = -1;
-			// Algebraic notation
-			} else if (!readOptTakesXYOptChecks(notation, cur, info.takes, info.mx, info.my, info.check, info.checkmate)) _BAD_NOTATION
-		} else _BAD_NOTATION
-		return;
-	} else if (*cur == '=') { // Draw offer
-		info.drawOffer = true;
-		if (cur+1  == notation.end()) _BAD_NOTATION
-		return;
-	} else if (*cur == 'o') { // Castling
-		// O-O(+,#); O-O-O(+,#)
-
-		//Expect -
-		++cur;
-		if (cur == notation.end() || *cur != '-') _BAD_NOTATION
-		
-		// Expect o, king side castle
-		++cur;
-		if (cur == notation.end() || *cur != 'o') _BAD_NOTATION
-		
-		info.kCastles = true;
-		++cur;
-	
-		if (readOptFinalChecks(notation, cur, info.check, info.checkmate)) return;
-		// Expect -O, queen side castle
-		else if (*cur != '-') _BAD_NOTATION
-
-		++cur;
-		if (cur == notation.end() || *cur != 'o') _BAD_NOTATION	
-
-		// Invalidate king castling
-		info.kCastles = false;
-		info.qCastles = true;	
-
-		// Optional checks
-		if (!readOptFinalChecks(notation, cur, info.check, info.checkmate)) _BAD_NOTATION
-	// Unknown first character
-	} else _BAD_NOTATION
-
-	// Algebraic notation: 
-	// X or Y or both
-
-	// Expects: 
-	// x: X->Y->(+,#);
-	// X: (x)->X->Y->(+,#), Y(+,#), Y->(x)->X->Y->(+,#);
-	// Y: (x)->X->Y->(+,#)
-
-	++cur;
-	// Takes
-	if (readTakes(notation, cur, info.takes)) {
-		// Expect X->Y->(+,#)
-		++cur;
-		if (!readXYOptChecks(notation, cur, info.mx, info.my, info.check, info.checkmate)) _BAD_NOTATION
-	// X coordinate
-	} else if (readX(notation, cur, info.px)) {
-		// Expect (x)->X->Y(+,#) or Y(+,#) or Y->(x)->X->Y->(+,#)
-		++cur;
-	
-		if (readY(notation, cur, info.py)) {
-			++cur;
-			if (readOptFinalChecks(notation, cur, info.check, info.checkmate)) {
-				// Invalidate algebraic coordinates
-				info.mx = info.px;
-				info.my = info.py;
-				info.px = info.py = -1;
-			} else if (!readOptTakesXYOptChecks(notation, cur, info.takes, info.mx, info.my, info.check, info.checkmate)) _BAD_NOTATION
-		} else if (!readOptTakesXYOptChecks(notation, cur, info.takes, info.mx, info.my, info.check, info.checkmate)) _BAD_NOTATION
-	// Y coordinate
-	} else if (readY(notation, cur, info.py)) {
-		// Expect (x)->X->Y->(+,#)
-		++cur;
-		if (!readOptTakesXYOptChecks(notation, cur, info.takes, info.mx, info.my, info.check, info.checkmate)) _BAD_NOTATION
-	} else _BAD_NOTATION
-
-}
-
-
-// piece x, y; moves x, y
-// void translateNotation(string notation, NotationInfo& info) {
-//	strToLower(notation);
-//	string::iterator cur = notation.begin();
-//
-//	// Deduce pieces
-//	if (*cur == 'r') info.piece = R;
-//	else if (*cur == 'n') info.piece = N;
-//	else if (*cur == 'b') info.piece = B;
-//	else if (*cur == 'q') info.piece = Q;
-//	else if (*cur == 'k') info.piece = K;
-//	else if (*cur >= 'a' && *cur <= 'h') { // Pawn
-//		// X: x->X->Y(+,#), Y->(+,#);X->Y(+,#)
-//
-//		info.px = *cur - 'a';
-//		info.piece = P;
-//		
-//		// Expect takes, Y
-//		++cur;
-//		if (cur == notation.end()) { info.badNotation = true; return; }
-//
-//		if (*cur == 'x') { 
-//			info.takes = true;
-// 			
-//			// Expect X->Y(+,#)
-//			goto expectxy;
-//		} else if (*cur >= '1' && *cur <= '8') {
-//			info.my = *cur - '1';
-//
-//			// Expect X, (+,#)
-//			if (*cur >= 'a' && *cur <= 'h') {
-//				info.py = *cur - 'a';
-//
-//				// Expect Y(+,#)
-//				goto expecty;
-//			}
-//			
-//			// Expect (+,#)
-//			// Invalidate algebraic coordinate
-//			info.mx = info.px;
-//			info.px = -1;
-//
-//			goto expectchecks;
-//		} else { info.badNotation = true; return; }
-//	// Draw offer
-//	} else if (*cur == '=') {
-//		info.drawOffer = true;
-//		if (cur+1  == notation.end()) info.badNotation = true;
-//		return;
-//	// Castles
-//	} else if (*cur == 'o') {
-//		// O-O(+,#); O-O-O(+,#)
-//
-//		//Expect -
-//		++cur;
-//		if (cur == notation.end() || *cur != '-') { info.badNotation = true; return; }
-//		
-//		// Expect o, king side castle
-//		++cur;
-//		if (cur == notation.end() || *cur != 'o') { info.badNotation = true; return; }	
-//		
-//		info.kCastles = true;
-//		++cur;
-//		if (cur == notation.end()) return;
-//
-//		// Optional checks
-//		if (*cur == '+') {
-//			info.check = true;
-//			if (cur+1 != notation.end()) info.badNotation=true;
-//			return;
-//		}
-//		else if (*cur == '#') {
-//			info.checkmate = true;
-//			if (cur+1 != notation.end()) info.badNotation=true;
-//			return;
-//		}	
-//
-//		// Expect -0, Queen side castle
-//		if (*cur != '-') { info.badNotation = true; return; }
-//		++cur;
-//
-//		// Expect 0
-//		if (cur == notation.end() || *cur != 'o') { info.badNotation=true; return; }
-//		
-//		// Invalidate king castling
-//		info.kCastles = false;
-//		info.qCastles = true;	
-//
-//		// Optional checks
-//		goto expectchecks;
-//	// Unknown first character
-//	} else { info.badNotation = true; return; }
-//
-//	// Algebraic notation: 
-//	// X or Y or both
-//
-//	// Expects: 
-//	// x: X->Y->(+,#);
-//	// X: (x)->X->Y->(+,#), Y(+,#), Y->(x)->X->Y->(+,#);
-//	// Y: (x)->X->Y->(+,#)
-//
-//	++cur;
-//	if (cur == notation.end()) { info.badNotation = true; return; }
-//
-//	// Takes
-//	if (*cur == 'x') {
-//		info.takes = true;
-//	
-//		// Expect X->Y(+,#)
-//expectxy:
-//		++cur;
-//		if (cur == notation.end()) { info.badNotation = true; return; }	
-//
-//		if (!(*cur >= 'a' && *cur <= 'h')) { info.badNotation = true; return; }
-//		info.mx = *cur - 'a';
-//
-//		// Expect Y(+,#)
-//expecty:
-//		++cur;
-//		if (cur == notation.end()) { info.badNotation = true; return; }	
-//
-//		if (!(*cur >= '1' && *cur <= '8')) { info.badNotation=true; return; }
-//		info.my = *cur - '1';
-//		
-//		// Optional checks
-//expectchecks:
-//		++cur; 
-//		if (cur == notation.end()) return;	
-//		
-//		if (*cur == '+') {
-//			info.check = true;
-//			if (cur+1 != notation.end()) info.badNotation=true;
-//			return;
-//		}
-//		else if (*cur == '#') {
-//			info.checkmate = true;
-//			if (cur+1 != notation.end()) info.badNotation=true;
-//			return;
-//		}	
-//		else { info.badNotation = true; return; }
-//	}
-//	// X coordinate
-//	if (*cur >= 'a' && *cur <= 'z') {
-//		info.px = *cur - 'a';
-//		++cur;
-//
-//		// Expect takes, X coordinate, Y coordinate
-//		if (cur == notation.end()) { info.badNotation = true; return; }	
-//
-//		if (*cur == 'x') {
-//			info.takes = true;
-//		
-//			// Expect X->Y(+,#)
-//			goto expectxy;
-//		} else if (*cur >= 'a' && *cur <= 'h') {
-//			info.mx = *cur - 'a';
-//		
-//			// Expect Y(+,#)
-//			goto expecty;
-//		} else if (*cur >= '1' && *cur <= '8') {
-//			// Invalidate algebraic coordinate
-//			info.py = *cur - '1';
-//	
-//			// Expect takes, X, (+,#)
-//			++cur;
-//			if (*cur == 'x') {
-//				info.takes = true;
-//
-//				// Expect X->Y(+,#)
-//				goto expectxy;
-//			} else if (*cur >= 'a' && *cur <= 'h') {
-//				info.mx = *cur - 'a';
-//
-//				// Expect Y(+,#)
-//				goto expecty;
-//			}
-//			// Expect (+,#)
-//			// Invalidate algebraic coordinates
-//			info.mx = info.px;
-//			info.my = info.py;
-//			info.px = info.py = -1;
-//
-//			goto expectchecks;
-//		} else { info.badNotation = true; return; }
-//	}
-//	// Y coordinate
-//	if (*cur >= '1' && *cur <= '8') {
-//		info.py = *cur - '1';
-//		++cur;
-//		
-//		// Expect takes, X coordinate
-//		if (cur == notation.end()) { info.badNotation = true; return; }	
-//		
-//		if (*cur == 'x') {
-//			info.takes = true;
-//		
-//			// Expect X->Y(+,#)
-//			goto expectxy;
-//		} else if (*cur >= 'a' && *cur <= 'h') {
-//			info.mx = *cur - 'a';
-//		
-//			// Expect Y(+,#)
-//			goto expecty;
-//		} else { info.badNotation = true; return; }
-//	} else { info.badNotation = true; return; }
-//}
-//
