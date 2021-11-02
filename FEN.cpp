@@ -18,6 +18,8 @@ bool readCastlingRights(char*& it, bool castlingRights[2][2]);
 bool readPositiveInteger(char*& it, unsigned& number);
 
 // ----------- Main functions
+
+// Spaces and slashes are redundant
 bool loadFEN(char* fen) {
 	char* it = fen;
 
