@@ -1,16 +1,14 @@
-#include "notation.h"
+#include "notation.h" 
+#include "chess.h" // PieceTyppe
+#include "utils.h" // textToLower
 
 // ----------- Helper function prototypes
 
-bool readX(char*& it, int &x);
-bool readY(char*& it, int &y);
 bool readCapture(char*& it, bool &capture);
 bool readOptFinalChecks(char*& it, bool &check, bool &checkmate);
 
 bool readOptCaptureXY(char*& it, bool& capture, int& x, int& y);
 bool readOptPromoteFinalChecks(char*& it, PieceType& promote, bool& check, bool& checkmate);
-
-void textToLower(char* text);
 
 // ----------- Main functions
 bool translateNotation(char* notation, MoveInfo &move) {
@@ -123,7 +121,7 @@ bool translateNotation(char* notation, MoveInfo &move) {
 // ----------- Elementary reading functions (input lowercase)
 bool readX(char*& it, int &x) {
     if (*it < 'a' || *it > 'h') return false;
-	x = *it - 'a';
+	x = *it - 'a'; // Gives numbers starting from 0
 
 	++it;
     return true;
@@ -131,7 +129,7 @@ bool readX(char*& it, int &x) {
 
 bool readY(char*& it, int &y) {
     if (*it < '1' || *it > '8') return false;
-    y = *it - '1';
+    y = *it - '1'; // Gives numbers starting from 0
 
 	++it;
     return true;
@@ -192,9 +190,3 @@ bool readOptPromoteFinalChecks(char*& it, PieceType& promote, bool& check, bool&
 	return false;
 }
 
-// ----------- Misc Functions
-void textToLower(char* text) {
-	for (char* c = text; *c; ++c) {
-		if (*c >= 'A' && *c <= 'Z') *c += 32;
-	}
-}

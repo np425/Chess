@@ -5,7 +5,7 @@
 Notation to moves 
 */
 
-#include "chess.h"
+#include "chess.h" // PieceType, Square
 
 struct MoveInfo {
     PieceType pieceType = PT_NONE;
@@ -25,6 +25,10 @@ struct MoveInfo {
     bool checkmate = false;
     bool castles[2] = { false, false }; // king-side and queen-side castling
 };
+
+bool readX(char*& it, int &x);
+
+bool readY(char*& it, int &y);
 
 bool translateNotation(char* notation, MoveInfo& info);
 
