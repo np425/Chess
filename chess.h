@@ -45,9 +45,14 @@ extern Player toMove;
 extern Square checks[MAX_ATTACKERS];
 extern Square* checksEnd; 
 
-extern Square prevPawn; 
+extern Square passant; 
 
 extern bool canCastle[2][2];
+
+extern GameState gameState;
+
+extern unsigned fullMoves;
+extern unsigned halfMoves;
 
 // ----------- Helper functions
 inline PieceType pieceToType(const Piece piece) {
@@ -103,6 +108,5 @@ Square* getProtects(const Square& targ, Square* it, const Player pl);
 bool attemptCastles(const int side);
 void completeMove(const Square& from, const Square& to, PieceType promote = PT_NONE);
 
-GameState getGameState();
 
 #endif

@@ -3,6 +3,8 @@
 #include <cmath> // std::abs
 #include <algorithm> // std::swap
 
+// TODO: Update game state after every move, not explicitly
+
 // ----------- Global variables
 Piece board[BOARD_SIZE_Y][BOARD_SIZE_X];
 Square kingPos[2];
@@ -10,10 +12,17 @@ Square kingPos[2];
 Square checks[MAX_ATTACKERS];
 Square* checksEnd; 
 
-Square prevPawn; 
+Square passant; 
 bool canCastle[2][2];
 
 Player toMove;
+
+GameState gameState;
+
+// TODO: Make use of these variables
+// TODO: Implement draw rules: 50-move rule, three-fold repetition
+unsigned fullMoves;
+unsigned halfMoves;
 
 // ----------- Helper function prototypes
 bool validateChecks();
@@ -27,6 +36,8 @@ Square* getBRQKProtects(const Square& targ, Square* it, const Player pl);
 
 bool canMove(const Square& from, const Square& to, const Player pl);
 bool isPinned(const Square& from, const Square& to, const Player pl);
+
+void updateGameState();
 
 // ----------- Main functions
 Square* getProtects(const Square& targ, Square* it, const Player pl) {
@@ -78,15 +89,15 @@ bool validateBoard() {
 	return validateChecks();	
 }
 
-GameState getGameState() {
+void updateGameState() {
 	// Sign is from the perspective of the opponent
 	int sign = getPlayerSign((Player)!toMove);
 	if (isCheckmate(toMove)) 
-		return sign * GS_CHECKMATE;
+		gameState = sign * GS_CHECKMATE;
 	else if (isStalemate(toMove))
-		return sign * GS_STALEMATE;
+		gameState = sign * GS_STALEMATE;
 	else
-		return GS_PLAYING;
+		gameState = GS_PLAYING;
 }
 
 Square* getMoves(const Square& targ, Square* it, const Player pl) {
@@ -99,7 +110,7 @@ Square* getMoves(const Square& targ, Square* it, const Player pl) {
 	
 	int plSign = getPlayerSign(pl);
 
-	Piece passantCapture = PT_NONE;
+	Piece hiddenPassant = PT_NONE;
 	
 	// Additional pawn moves:
 	int y = targ.y - plSign;
@@ -113,9 +124,9 @@ Square* getMoves(const Square& targ, Square* it, const Player pl) {
 
 			if (pieceToType(piece) == PT_PAWN && pieceToPlayer(piece) == pl) {
 				// En passant
-				if (prevPawn.y == y && prevPawn.x == targ.x) {
-					passantCapture = board[y][targ.x];
-					board[y][targ.x] = PT_NONE; // Hiding to find the pin
+				if (passant.y == y && passant.x == x) {
+					hiddenPassant = board[y][targ.x];
+					board[y][targ.x] = PT_NONE; // Hiding passant pawn to find the pin
 					*(end++) = {y,x};
 				} else if (targPl != PL_NONE) {
 					*(end++) = {y,x};
@@ -150,16 +161,14 @@ Square* getMoves(const Square& targ, Square* it, const Player pl) {
 
 	it = end;
 
-	// Unhide en passant piece
-	if (passantCapture) 
-		board[targ.y - plSign][targ.x] = passantCapture;
+	// Unhide passant pawn
+	if (hiddenPassant) 
+		board[targ.y - plSign][targ.x] = hiddenPassant;
 
 	return it;
 }
 
 void completeMove(const Square& from, const Square& to, const PieceType promote) {
-	// TODO: Promotion logic
-
 	PieceType type = pieceToType(board[from.y][from.x]);
 	int plSign = getPlayerSign(toMove);
 
@@ -170,8 +179,9 @@ void completeMove(const Square& from, const Square& to, const PieceType promote)
 		case PT_PAWN:
 			if (from.y + 2 * plSign == to.y) { // Two up
 				twoup = true;
-				prevPawn = to; // Update previous two-up pawn move (for en passant)
-			} else if (prevPawn.y == from.y && prevPawn.x == to.x) { // En passant
+				// Update passant (move "behind" the pawn)
+				passant = {to.y - plSign, to.x}; 
+			} else if (passant.y == from.y && passant.x == to.x) { // En passant
 				board[from.y][to.x] = PL_NONE;
 			}
 			break;
@@ -195,13 +205,16 @@ void completeMove(const Square& from, const Square& to, const PieceType promote)
 	board[from.y][from.x] = PT_NONE;
 
 	// Invalidate en passant opportunity
-	if (!twoup) prevPawn = {-1,-1};
+	if (!twoup) passant = {-1,-1};
 
 	// Update player
 	toMove = (Player)!toMove;
 
 	// Update for enemy: checks
 	checksEnd = getProtects(kingPos[toMove], checks, (Player)!toMove);
+
+	// Update game state for player
+	updateGameState();
 }
 
 bool attemptCastles(const int side) {
@@ -235,13 +248,16 @@ bool attemptCastles(const int side) {
 	canCastle[toMove][1] = false;
 
 	// Invalidate en passant opportunity
-	prevPawn = {-1,-1};
+	passant = {-1,-1};
 	
 	// Update player
 	toMove = (Player)!toMove;
 	
 	// Update checks
 	checksEnd = getProtects(kingPos[toMove], checks, (Player)!toMove);
+	
+	// Update game state for player
+	updateGameState();
 
 	return true;
 }
@@ -390,7 +406,6 @@ Square* getPawnProtects(const Square& targ, Square* it, const Player pl) {
 }
 
 // ----------- Move validation functions
-// TODO: test pins
 bool isPinned(const Square& from, const Square& to, const Player pl) {
 	Square diff = {from.y-kingPos[pl].y, from.x-kingPos[pl].x};
 	Square sign = {numSign(diff.y), numSign(diff.x)};
