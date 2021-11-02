@@ -1,10 +1,14 @@
 #include <iostream>
-#include "chess.h"
-#include "notation.h"
+#include "chess.h" 
+#include "notation.h" 
+#include "FEN.h"   
 
 const char* COLOUR_END = "\033[0m";
 
 constexpr Piece BOARD_SETUP[] = {1,2,3,4,5,3,2,1,6,6,6,6,6,6,6,6};
+
+//warning: ISO C++ forbids converting a string constant to ‘char*’ [-Wwrite-strings]
+char* INITIAL_POS_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 
 // ----------- Helper function prototypes
 void displayBoard();
@@ -15,22 +19,26 @@ const char* playerToString(const Player pl);
 const char* endTypeToString(const GameStateType type);
 
 // ----------- Main functions prototypes
-void setupGame();
+bool setupGame();
 void setupBoard();
-void processMoves(GameState& gameState);
+void processMoves();
 bool handleMove(const MoveInfo& move);
 
 // ----------- Main functions
 int main() {
 	std::ios::sync_with_stdio(false);
 
-	setupGame();
+	if (!setupGame()) {
+		std::cerr << "Could not setup the game!" << std::endl;
+		return 1;
+	}
 
-	if (!validateBoard()) return 1;
+	if (!validateBoard()) {
+		std::cerr << "Invalid initial position!" << std::endl;
+		return 1;
+	}
 
-	GameState gameState;
-
-	processMoves(gameState);
+	processMoves();
 
 	GameStateType endType = gameStateToType(gameState);
 	Player player = gameStateToPlayer(gameState);
@@ -40,7 +48,7 @@ int main() {
 	return 0;
 }
 
-void processMoves(GameState& gameState) {
+void processMoves() {
 	char notation[30];
 	MoveInfo move;
 	bool lastMove = true;
@@ -48,7 +56,7 @@ void processMoves(GameState& gameState) {
 	while (true) {
 		std::cout << "\x1B[2J\x1B[H"; // Clear screen (Unix only)
 		displayBoard();
-		if ((gameState = getGameState()) != GS_PLAYING)
+		if (gameState != GS_PLAYING)
 			break;
 
 		do {
@@ -88,14 +96,18 @@ bool handleMove(const MoveInfo& move) {
 }
 
 
-void setupGame() {
-	setupBoard();
-	toMove = PL_WHITE;
-	canCastle[PL_WHITE][0] = true;
-	canCastle[PL_WHITE][0] = true;
-	canCastle[PL_BLACK][0] = true;
-	canCastle[PL_BLACK][0] = true;
-	prevPawn = {-1,-1};
+bool setupGame() {
+	//setupBoard();
+	//toMove = PL_WHITE;
+	//canCastle[PL_WHITE][0] = true;
+	//canCastle[PL_WHITE][0] = true;
+	//canCastle[PL_BLACK][0] = true;
+	//canCastle[PL_BLACK][0] = true;
+	//passant = {-1,-1};
+	//halfMoves = 0;
+	//fullMoves = 0;
+
+	return loadFEN(INITIAL_POS_FEN);
 }
 
 void setupBoard() {

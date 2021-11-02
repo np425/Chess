@@ -3,8 +3,6 @@
 #include <cmath> // std::abs
 #include <algorithm> // std::swap
 
-// TODO: Update game state after every move, not explicitly
-
 // ----------- Global variables
 Piece board[BOARD_SIZE_Y][BOARD_SIZE_X];
 Square kingPos[2];
