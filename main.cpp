@@ -19,7 +19,7 @@ const char* playerToString(const Player pl);
 const char* endTypeToString(const GameStateType type);
 
 // ----------- Main functions prototypes
-bool setupGame();
+void setupGame();
 void setupBoard();
 void processMoves();
 bool handleMove(const MoveInfo& move);
@@ -28,15 +28,7 @@ bool handleMove(const MoveInfo& move);
 int main() {
 	std::ios::sync_with_stdio(false);
 
-	if (!setupGame()) {
-		std::cerr << "Could not setup the game!" << std::endl;
-		return 1;
-	}
-
-	if (!validateBoard()) {
-		std::cerr << "Invalid initial position!" << std::endl;
-		return 1;
-	}
+	setupGame();
 
 	processMoves();
 
@@ -95,19 +87,44 @@ bool handleMove(const MoveInfo& move) {
 	} else return false;
 }
 
+bool handleChoice() {
+	char fenString[90];
+	while (true) {
+		std::cout << "> ";
+		int choice;
+		if (!(std::cin >> choice)) {
+			std::cout << "Invalid option. Try again!" << std::endl;
+			continue;
+		}
+		switch (choice) {
+			case 1:
+				return loadFEN(INITIAL_POS_FEN);
+			case 2:
+				std::cout << "Enter FEN: " << std::flush;
+				std::cin >> std::ws;
+				std::cin.getline(fenString, 90);
+				return loadFEN(fenString);
+			default:
+				std::cout << "Invalid option. Try again!" << std::endl;
+				break;
+		}
+	}
+}
 
-bool setupGame() {
-	//setupBoard();
-	//toMove = PL_WHITE;
-	//canCastle[PL_WHITE][0] = true;
-	//canCastle[PL_WHITE][0] = true;
-	//canCastle[PL_BLACK][0] = true;
-	//canCastle[PL_BLACK][0] = true;
-	//passant = {-1,-1};
-	//halfMoves = 0;
-	//fullMoves = 0;
-
-	return loadFEN(INITIAL_POS_FEN);
+void setupGame() {
+	while (true) {
+		std::cout << "1: Start game with standard position" << std::endl;
+		std::cout << "2: Start game with selected FEN" << std::endl;
+		std::cout << std::endl;
+		
+		if (!handleChoice()) {
+			std::cerr << "Could not setup the game!" << std::endl;
+			std::cout << "Please try again!" << std::endl;
+		} else if (!validateBoard()) {
+			std::cerr << "Invalid initial position!" << std::endl;
+			std::cout << "Please try again!" << std::endl;
+		} else break;
+	}
 }
 
 void setupBoard() {
