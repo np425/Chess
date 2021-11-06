@@ -55,6 +55,7 @@ void processMoves() {
 			if (!lastMove) std::cout << "Invalid move" << std::endl;
 
 			std::cout << playerToString(toMove) << " to move: ";
+			std::cin >> std::ws;
 			std::cin.getline(notation, 30);
 		} while (!translateNotation(notation, move) || !(lastMove = handleMove(move)));
 	}
