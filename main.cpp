@@ -43,7 +43,7 @@ int main() {
 void processMoves() {
 	char notation[30];
 	MoveInfo move;
-	bool lastMove = true;
+	bool prevMove = true;
 
 	while (true) {
 		std::cout << "\x1B[2J\x1B[H"; // Clear screen (Unix only)
@@ -52,12 +52,14 @@ void processMoves() {
 			break;
 
 		do {
-			if (!lastMove) std::cout << "Invalid move" << std::endl;
+			if (!prevMove) std::cout << "Invalid move" << std::endl;
 
-			std::cout << playerToString(toMove) << " to move: ";
+			std::cout << playerToString(toMove) << " to move: " << std::flush;
 			std::cin >> std::ws;
 			std::cin.getline(notation, 30);
-		} while (!translateNotation(notation, move) || !(lastMove = handleMove(move)));
+
+			prevMove = true;
+		} while (!translateNotation(notation, move) || !handleMove(move));
 	}
 }
 
