@@ -99,6 +99,21 @@ inline Player gameStateToPlayer(const GameState gameState) {
 		return PL_NONE;
 }
 
+// ----------- Helper function prototypes
+bool validateChecks();
+
+bool isCheckmate(const Player p);
+bool isStalemate(const Player p);
+
+Square* getKnightProtects(const Square& targ, Square* it, const Player pl);
+Square* getPawnProtects(const Square& targ, Square* it, const Player pl);
+Square* getBRQKProtects(const Square& targ, Square* it, const Player pl);
+
+bool canMove(const Square& from, const Square& to, const Player pl);
+bool isPinned(const Square& from, const Square& to, const Player pl);
+
+void updateGameState();
+
 // ----------- Main functions
 bool validateBoard();
 
