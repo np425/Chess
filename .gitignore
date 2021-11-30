@@ -47,3 +47,6 @@ _deps
 Build/
 
 Chess
+
+# Visual Studio Code
+.vscode/
