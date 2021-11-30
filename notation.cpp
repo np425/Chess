@@ -2,14 +2,6 @@
 #include "chess.h" // PieceTyppe
 #include "utils.h" // textToLower
 
-// ----------- Helper function prototypes
-
-bool readCapture(char*& it, bool &capture);
-bool readOptFinalChecks(char*& it, bool &check, bool &checkmate);
-
-bool readOptCaptureXY(char*& it, bool& capture, int& x, int& y);
-bool readOptPromoteFinalChecks(char*& it, PieceType& promote, bool& check, bool& checkmate);
-
 // ----------- Main functions
 bool translateNotation(char* notation, MoveInfo &move) {
 	textToLower(notation); // Lowercase notation

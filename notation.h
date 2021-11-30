@@ -26,10 +26,17 @@ struct MoveInfo {
     bool castles[2] = { false, false }; // king-side and queen-side castling
 };
 
+// ----------- Helper function prototypes
 bool readX(char*& it, int &x);
-
 bool readY(char*& it, int &y);
 
+bool readCapture(char*& it, bool &capture);
+bool readOptFinalChecks(char*& it, bool &check, bool &checkmate);
+
+bool readOptCaptureXY(char*& it, bool& capture, int& x, int& y);
+bool readOptPromoteFinalChecks(char*& it, PieceType& promote, bool& check, bool& checkmate);
+
+// ----------- Main function prototypes
 bool translateNotation(char* notation, MoveInfo& info);
 
 #endif
