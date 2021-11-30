@@ -1,25 +1,10 @@
-#ifndef FEN_H
-#define FEN_H
-
 #include "FEN.h" 
+#include <cctype> // tolower, isupper
 #include "chess.h" // global variables, types
 #include "notation.h" // readX, readY
-#include "utils.h" // charToLower, textToPositiveInteger, skipSpaces
-
-// ----------- Helper function prototypes
-int readPiece(char*& it, Piece& piece);
-void skipSlash(char*& it);
-
-bool readPlayer(char*& it, Player& player);
-
-bool readPassant(char*& it, Square& sqr);
-bool readCastlingRights(char*& it, bool castlingRights[2][2]);
-
-bool readPositiveInteger(char*& it, unsigned& number);
+#include "utils.h" // textToPositiveInteger
 
 // ----------- Main functions
-
-// Spaces and slashes are redundant
 bool loadFEN(char* fen) {
 	char* it = fen;
 
@@ -30,39 +15,39 @@ bool loadFEN(char* fen) {
 			if (!read) return false; // Unable to read a piece
 			else x += read;
 		}
-		skipSlash(it); // Slashes are unnecessary
+		while (*it == ' ' || *it == '/') ++it;
 	}
-	skipSpaces(it);
+	while (*it == ' ') ++it;
 
 	// 2. Next player to move
 	if (!readPlayer(it, toMove)) 
 		return false;
 	else
-		skipSpaces(it);
+		while (*it == ' ') ++it;
 
 	// 3. Castling rights
 	if (!readCastlingRights(it, canCastle))
 		return false;
 	else
-		skipSpaces(it);
+		while (*it == ' ') ++it;
 
 	// 4. Passant
 	if (!readPassant(it, passant))
 		return false;
 	else
-		skipSpaces(it);
+		while (*it == ' ') ++it;
 
 	// 5. Halfmoves
 	if (!readPositiveInteger(it, halfMoves))
 		return false;
 	else
-		skipSpaces(it);
+		while (*it == ' ') ++it;
 
 	// 6. Fullmoves
 	if (!readPositiveInteger(it, fullMoves))
 		return false;
 	else 
-		skipSpaces(it);
+		while (*it == ' ') ++it;
 
 	return true;
 }
@@ -72,9 +57,9 @@ bool loadFEN(char* fen) {
 // Returns how many pieces it has read
 int readPiece(char*& it, Piece& piece) {
 	// Uppercase = white pieces, lowercase = black pieces
-	int sign = (isUppercase(*it) ? 1 : -1); 
+	int sign = (isupper(*it) ? 1 : -1); 
 
-	char chr = charToLower(*it);
+	char chr = tolower(*it);
 
 	switch (chr) {
 		case 'r':
@@ -136,8 +121,8 @@ bool readCastlingRights(char*& it, bool castlingRights[2][2]) {
 	bool foundOne = false;
 
 	while (true) {
-		Player player = (isUppercase(*it) ? PL_WHITE : PL_BLACK);
-		char chr = charToLower(*it);
+		Player player = (isupper(*it) ? PL_WHITE : PL_BLACK);
+		char chr = tolower(*it);
 
 		int side = -1;
 
@@ -177,15 +162,12 @@ bool readPassant(char*& it, Square& sqr) {
 	else return true;
 }
 
-bool readPositiveInteger(char*& it, unsigned& number) {
-	char* it2 = textToPositiveInteger(it, number);
-	bool returnVal = (it != it2);
-	it = it2;
+bool readPositiveInteger(char*& start, unsigned& number) {
+	char* end = textToPositiveInteger(start, number);
+
+	// Must be separated by space
+	bool returnVal = (start != end && (*end == ' ' || *end == 0));
+	start = end;
 	return returnVal;
 }
 
-void skipSlash(char*& it) {
-	if (*it == '/') ++it;
-}
-
-#endif
