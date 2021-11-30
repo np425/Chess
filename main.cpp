@@ -1,22 +1,11 @@
 #include <iostream>
 #include "chess.h" 
-#include "notation.h" 
-#include "FEN.h"   
-
-const char* COLOUR_END = "\033[0m";
-
-constexpr Piece BOARD_SETUP[] = {1,2,3,4,5,3,2,1,6,6,6,6,6,6,6,6};
+#include "notation.h"
+#include "FEN.h"  
+#include "display.h"
 
 //warning: ISO C++ forbids converting a string constant to ‘char*’ [-Wwrite-strings]
 char* INITIAL_POS_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
-
-// ----------- Helper function prototypes
-void displayBoard();
-
-char pieceToChar(const Piece piece);
-const char* setPieceColour(const Piece piece);
-const char* playerToString(const Player pl);
-const char* endTypeToString(const GameStateType type);
 
 // ----------- Main functions prototypes
 void setupGame();
@@ -46,7 +35,9 @@ void processMoves() {
 	bool prevMove = true;
 
 	while (true) {
+	#ifdef __unix__
 		std::cout << "\x1B[2J\x1B[H"; // Clear screen (Unix only)
+	#endif
 		displayBoard();
 		if (gameState != GS_PLAYING)
 			break;
@@ -130,106 +121,3 @@ void setupGame() {
 	}
 }
 
-void setupBoard() {
-	constexpr int setupSize = sizeof(BOARD_SETUP)/sizeof(*BOARD_SETUP);
-	constexpr int BOARD_SIZE = BOARD_SIZE_Y*BOARD_SIZE_X;
-
-	int i = 0;
-	// White
-	while (i < setupSize) {
-		board[i/BOARD_SIZE_X][i%BOARD_SIZE_X] = +BOARD_SETUP[i];
-		++i;
-	}
-
-	// Empty squares
-	while (i < BOARD_SIZE-setupSize) {
-		board[i/BOARD_SIZE_X][i%BOARD_SIZE_X] = PT_NONE;
-		++i;
-	}
-
-	// Black
-	while (i < BOARD_SIZE) {
-		int y = BOARD_SIZE_Y-1-i/BOARD_SIZE_X;
-		int x = i%BOARD_SIZE_X;
-		int coord = y * BOARD_SIZE_X + x;
-		board[i/BOARD_SIZE_X][i%BOARD_SIZE_X] = -BOARD_SETUP[coord];
-		++i;
-	}
-}
-
-// ----------- Helper functions
-void displayBoard() {
-	std::cout << "  A B C D E F G H" << std::endl;
-	std::cout << "-------------------" << std::endl;
-	for (int y = BOARD_SIZE_Y-1; y >= 0; --y) {
-		std::cout << y+1 << "|";
-		std::cout << setPieceColour(board[y][0]) << pieceToChar(board[y][0]) << COLOUR_END;
-		for (int x = 1; x != BOARD_SIZE_X; ++x) {
-			std::cout << " " << setPieceColour(board[y][x]) << pieceToChar(board[y][x]) << COLOUR_END;
-		}
-		std::cout << "|" << y+1;
-		std::cout << std::endl;
-	}
-	std::cout << "-------------------" << std::endl;
-	std::cout << "  A B C D E F G H" << std::endl << std::endl;
-}
-
-char pieceToChar(const Piece piece) {
-	PieceType pType = pieceToType(piece);
-	switch (pType) {
-		case PT_NONE:
-			return '_';
-		case PT_ROOK:
-			return 'R';
-		case PT_BISHOP:
-			return 'B';
-		case PT_KNIGHT:
-			return 'N';
-		case PT_QUEEN:
-			return 'Q';
-		case PT_KING:
-			return 'K';
-		case PT_PAWN:
-			return 'P';
-		default:
-			std::cerr << "Unknown piece type: " << pType << std::endl;
-			std::abort();
-	}
-}
-
-const char* setPieceColour(const Piece piece) {
-	Player player = pieceToPlayer(piece);
-	switch (player) {
-		case PL_WHITE:
-			return "\033[37m"; // White
-		case PL_BLACK:
-			//return "\033[30m"; // Black
-			return "\033[31m"; // Red
-		default: // Empty squares
-			return "";
-	}
-}
-
-const char* playerToString(const Player pl) {
-	switch (pl) {
-		case PL_WHITE:
-			return "White";
-		case PL_BLACK:
-			return "Black";
-		default:
-			std::cerr << "Unknown player" << pl << std::endl;
-			std::abort();
-	}
-}
-
-const char* endTypeToString(const GameStateType type) {
-	switch (type) {
-		case GS_CHECKMATE:
-			return "Checkmate";
-		case GS_STALEMATE:
-			return "Stalemate";
-		default:
-			std::cerr << "Unknown end type" << type << std::endl;
-			std::abort();
-	}
-}
