@@ -1,7 +1,7 @@
 #ifndef DISPLAY_H
 #define DISPLAY_H
 
-#include "chess.h"
+#include "chess/standard.h"
 
 /*
 Chess representation in console window
@@ -16,15 +16,12 @@ Chess representation in console window
 #endif
 
 // ----------- Display functions
-void displayBoard();
+void displayBoard(StandardChess& chess);
 
-char pieceToChar(const Piece piece);
+char pieceToChar(StandardChess::Piece piece);
 
 #ifdef __unix__
-const char* setPieceColour(const Piece piece);
+const char* setPieceColour(StandardChess::Piece piece);
 #endif
-
-const char* playerToString(const Player pl);
-const char* endTypeToString(const GameStateType type);
 
 #endif
