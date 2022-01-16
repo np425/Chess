@@ -45,6 +45,7 @@ compile_commands.json
 CTestTestFile.cmake
 _deps
 Build/
+cmake-build-*/
 
 Chess
 
