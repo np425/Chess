@@ -51,3 +51,6 @@ Chess
 
 # Visual Studio Code
 .vscode/
+
+# JetBrains
+.idea/
