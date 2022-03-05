@@ -7,29 +7,30 @@
 #define BOARD_SIZE_Y 8
 #define BOARD_SIZE (BOARD_SIZE_X * BOARD_SIZE_Y)
 #define MAX_ATTACKERS 16
+#define FIRST_TO_MOVE WHITE
 
 namespace chess {
 
 enum PieceType {
-	PT_NONE = 0, PT_ROOK, PT_KNIGHT, PT_BISHOP, PT_QUEEN, PT_KING, PT_PAWN
+	VOID = 0, ROOK, KNIGHT, BISHOP, QUEEN, KING, PAWN
 };
 
 enum Player {
-	PL_WHITE = 0, PL_BLACK, PL_NONE
+	WHITE = 0, BLACK, PL_NONE
 };
 
 enum GameStateType {
-	GS_PLAYING = 0,
-	GS_WIN, // Resignation
-	GS_CHECKMATE,
-	GS_DRAW,
-	GS_STALEMATE
+	PLAYING = 0,
+	WIN, // Resignation
+	CHECKMATE,
+	DRAW,
+	STALEMATE
 };
 
 enum CastlingSide {
-	CS_NONE  = 0, 
-	CS_QSIDE = 1 << 0, 
-	CS_KSIDE = 1 << 1
+	QSIDE   = 0, 
+	KSIDE   = 1 << 0, 
+	CS_NONE = 1 << 1
 };
 
 /* + for White, - for Black, 0 for neutral */

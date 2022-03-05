@@ -18,7 +18,8 @@ public:
 	unsigned size() const;
 
 	T* it();
-	T* end();
+	const T* it() const;
+	const T* end() const;
 };
 
 template <typename T, unsigned S>
@@ -57,7 +58,12 @@ T* FixedArray<T,S>::it() {
 }
 
 template <typename T, unsigned S>
-T* FixedArray<T,S>::end() {
+const T* FixedArray<T,S>::it() const {
+	return elem;
+}
+
+template <typename T, unsigned S>
+const T* FixedArray<T,S>::end() const {
 	return head;
 }
 

@@ -2,9 +2,8 @@
 
 namespace chess {
 
-void Position::placePiece(const Coord& from, const Coord& to, const PieceType promote) {
-	int originCoord = from.y*BOARD_SIZE_X+from.x;
-	Piece piece = board[originCoord];
+void Position::movePiece(const Coord& from, const Coord& to, const PieceType promote) {
+	Piece piece = board[from.y*BOARD_SIZE_X+from.x];
 
 	PieceType type = pieceToType(piece);
 	int plSign = getPlayerSign(toMove);
@@ -13,7 +12,7 @@ void Position::placePiece(const Coord& from, const Coord& to, const PieceType pr
 
 	// Update game metadata & handle passant
 	switch (type) {
-		case PT_PAWN: 
+		case PAWN: 
 			// Update passant
 			if (from.y+2*plSign == to.y) { // Two up
 				// Update passant: set it "behind" the move (-1 Y)
@@ -21,21 +20,20 @@ void Position::placePiece(const Coord& from, const Coord& to, const PieceType pr
 				passant = {from.x, from.y+plSign};
 			} else if (passant.y == from.y && passant.x == to.x) { 
 				// En passant capture
-				board[from.y*BOARD_SIZE_X+to.x] = PL_NONE;
+				board.clearPiece({from.y, to.x});
 			}
 			break;
-		case PT_KING: 
-			// Eliminate castling and update king position
+		case KING: 
+			// Eliminate castling
 			castlePerms[toMove] = CS_NONE;
-			kingPos[toMove] = to; // Update king position
 			break;
-		case PT_ROOK:
+		case ROOK:
 			if (from.x == 0) {
 				// Left rook
-				castlePerms[toMove] &= ~CS_QSIDE;
+				castlePerms[toMove] &= ~QSIDE;
 			} else if (from.x == BOARD_SIZE_X - 1) {
 				// Right rook
-				castlePerms[toMove] &= ~CS_KSIDE;
+				castlePerms[toMove] &= ~KSIDE;
 			}
 			break;
 		default:
@@ -49,28 +47,25 @@ void Position::placePiece(const Coord& from, const Coord& to, const PieceType pr
 	Piece movePiece = (promote ? plSign * promote : piece);
 
 	// Move the piece
-	board[to.y*BOARD_SIZE_X+to.x] = movePiece;
-	board[originCoord] = PT_NONE;
+	board.clearPiece(from);
+	board.movePiece(movePiece, to);
 
 	nextTurn();
 }
 
-void Position::castles(const int side) {
+void Position::castles(const CastlingSide side) {
+	Coord kPos = board.getKingPos(toMove);
+
 	int rx = side * (BOARD_SIZE_X - 1);
 	int ry = toMove * (BOARD_SIZE_Y - 1);
 	int xSign = (side ? 1 : -1);
 
-	int kCoord = ry*BOARD_SIZE_X+kingPos[toMove].x;
+	int kCoord = ry*BOARD_SIZE_X+kPos.x;
 	int rCoord = ry*BOARD_SIZE_X+rx;
 
 	// Move pieces
-	board[kCoord + xSign] = board[rCoord];
-	board[kCoord + 2 * xSign] = board[kCoord];
-	board[rCoord] = PT_NONE;
-	board[kCoord] = PT_NONE;
-
-	// Update king position
-	kingPos[toMove].x += (2 * xSign);
+	board.movePiece(kCoord, {kCoord + 2 * xSign, ry});
+	board.movePiece(rCoord, {kCoord + xSign, ry});
 
 	// Invalidate castling variables
 	castlePerms[toMove] = CS_NONE;
@@ -79,6 +74,17 @@ void Position::castles(const int side) {
 	passant = {-1,-1};
 
 	nextTurn();
+}
+
+void Position::nextTurn() {
+	// Update player
+	toMove = (Player)!toMove;
+
+	// Update checks
+	updateChecks(toMove);
+
+	// Update game state for player
+	updateGameState();
 }
 
 }

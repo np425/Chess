@@ -5,34 +5,34 @@
 Chess position definitions: variables and mechanics
 */
 
-#include "basic_types.h"
-#include "utils.h"
+// TODO: Move counter
+
+#include "board.h"
+#include "notation/move_notation.h"
 
 namespace chess {
 
 class Position {
-	Piece board[BOARD_SIZE];
+	Board board;
+
+	/* Positional variables */
 	Player toMove;
 	GameState state;
 	CastlingPerms castlePerms[2];
+	Coord passant;
 
 	/* Meta Information to improve processing speed */
-	Coord kingPos[2];
-	Coord passant;
-	CoordArray checks;
-
-	void updateChecks();
+	CoordArray checks; // Depends on current player
 
 	/* Validation */
-	bool findAndValidateKings();
-	bool findAndValidateChecks();
-	bool validatePawnsPlacement() const;
+	bool validateChecks();
 	bool validatePassant(const Player) const;
 
 	/* Game State */
 	void updateGameState();
 	bool isStalemate(const Player pl) const;
 	bool isCheckmate(const Player pl) const;
+	void updateChecks(const Player pl);
 
 	/* Moves */
 	bool findValidMove(MoveInfo& move, const Player by) const; // Also updates MoveInfo
@@ -41,20 +41,35 @@ class Position {
 	bool isMovePinned(const Coord& from, const Coord& to) const;
 	bool doesMovePreventCheck(const Coord& from, const Coord& to) const;
 
-	void placePiece(const Coord& from, const Coord& to, const PieceType promote);
-	void castles(const int side);
+	void castles(const CastlingSide, const Player);
+
 	bool makeMove(MoveInfo& move, const Player pl); // Also updates MoveInfo
 
 	/* Turns */
 	void nextTurn();
 
 public:
-	/* Getters */
-	const Piece* getBoard() const;
+	/* Position */
+	const Board& getBoard() const;
 	Player getPlayer() const;
-	GameState getGameState() const;
-	const CastlingPerms* getCastlingPerms() const;
-	const CoordArray* getChecks() const;
+	GameState getState() const;
+	const CastlingPerms& getCastlingPerms(const Player pl) const;
+	const CoordArray& getChecks() const;
+	Coord getPassant() const;
+	bool isGameOver() const;
+
+	void getMoves(const Coord& coord, CoordArray& arr, const Player by) const;
+	bool canMove(const Coord& from, const Coord& to) const;
+	bool canCastle(const CastlingSide side, const Player pl) const;
+	bool makeMove(MoveInfo& move); // Also updates MoveInfo
+	bool makeMove(const char* notation);
+
+	//Position(Board newBoard={}) : board(newBoard) {};
+	Position(Board newBoard={});
+
+	/* Board */
+	void changeBoard(Board newBoard);
+	bool isPathClear(const Coord&, const Coord&) const;
 
 	/* Validation */
 	bool validate();
@@ -63,14 +78,9 @@ public:
 	void getDefenders(const Coord& coord, CoordArray& arr, const Player by) const;
 	bool defends(const Coord& from, const Coord& to) const;
 
-	/* Board */
-	bool isPathClear(const Coord&, const Coord&) const;
-
 	/* Moves */
-	void getMoves(const Coord& coord, CoordArray& arr, const Player by) const;
-	bool canMove(const Coord& from, const Coord& to) const;
-	bool canCastle(const CastlingSide side, const Player pl) const;
-	bool makeMove(MoveInfo& move); // Also updates MoveInfo
+	void movePiece(const Coord& from, const Coord& to, const PieceType promote=VOID);
+	void castles(const CastlingSide side);
 };
 
 /* Can piece defend regardless of current position (how pieces move) */

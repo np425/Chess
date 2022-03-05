@@ -2,9 +2,12 @@
 
 namespace chess {
 
+// IDEA: Maybe rewrite Coord to a proper class?
+
 bool Position::isCheckmate(const Player pl) const {
 	CoordArray moves;
 	unsigned checksAmount = checks.size();
+	Coord kPos = board.getKingPos(pl);
 
 	if (checksAmount == 0) return false;
 	
@@ -18,14 +21,14 @@ bool Position::isCheckmate(const Player pl) const {
 		int cx = checks[0].x;
 
 		// 2. Block the attacker (only if the check is not a knight or a pawn)
-		int diffY = cy - kingPos[pl].y;
-		int diffX = cx - kingPos[pl].x;
+		int diffY = cy - kPos.y;
+		int diffX = cx - kPos.x;
 
 		int signY = numSign(diffY);
 		int signX = numSign(diffX);
 
-         int y = kingPos[pl].y + signY;
-         int x = kingPos[pl].x + signX;
+        int y = kPos.y + signY;
+        int x = kPos.x + signX;
 
 		// From king towards the check 
         for (int iy = y, ix = x; iy != cy && ix != cx; iy += signY, ix += signX) {	
@@ -36,17 +39,17 @@ bool Position::isCheckmate(const Player pl) const {
     
 	// 3. If there is more than 1 check, only legal move is to move the king
 	for (int ySign = -1; ySign <= 1; ++ySign) {
-		int y = kingPos[pl].y + ySign;
+		int y = kPos.y + ySign;
 		if (y < 0 || y >= BOARD_SIZE_Y) continue;
 
 		for (int xSign = -1; xSign <= 1; ++xSign) {
 			if (xSign == 0 && ySign == 0) continue;
 
-			int x = kingPos[pl].x + xSign;
+			int x = kPos.x + xSign;
 
 			if (x < 0 || x >= BOARD_SIZE_X) continue;
 
-			if (canMove(kingPos[pl], {x,y})) {
+			if (canMove(kPos, {x,y})) {
 				return false;
 			}
 		}
@@ -73,14 +76,18 @@ void Position::updateGameState() {
 	int sign = getPlayerSign((Player)!toMove);
 
 	if (isCheckmate(toMove)) {
-		state = GS_CHECKMATE;
+		state = CHECKMATE;
 	} else if (isStalemate(toMove)) {
-		state = GS_STALEMATE;
+		state = STALEMATE;
 	} else {
-		state = GS_PLAYING;
+		state = PLAYING;
 	}
 
 	state *= sign;
+}
+
+bool Position::isGameOver() const {
+	return state != PLAYING;
 }
 
 }

@@ -13,8 +13,8 @@ Utility functions for chess
 namespace chess {
 
 inline Player pieceToPlayer(const Piece piece) {
-	if (piece > 0) return PL_WHITE;
-	else if (piece < 0) return PL_BLACK;
+	if (piece > 0) return WHITE;
+	else if (piece < 0) return BLACK;
 	else return PL_NONE;
 }
 
@@ -28,7 +28,7 @@ inline bool inBounds(const int x, const int y) {
 
 // Assume player is not PL_NONE
 inline int getPlayerSign(const Player pl) {
-	return (pl == PL_WHITE ? 1 : -1);
+	return (pl == WHITE ? 1 : -1);
 }
 
 inline GameStateType stateToType(const GameState state) {
@@ -36,8 +36,8 @@ inline GameStateType stateToType(const GameState state) {
 }
 
 inline Player stateToPlayer(const GameState state) {
-	if (state > 0) return PL_WHITE;
-	else if (state < 0) return PL_BLACK;
+	if (state > 0) return WHITE;
+	else if (state < 0) return BLACK;
 	else return PL_NONE;
 }
 

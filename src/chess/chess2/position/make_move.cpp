@@ -9,7 +9,7 @@ bool Position::findValidMove(MoveInfo& move, const Player by) const {
 	}
 	
 	CoordArray moves;
-	getMoves(move.to, moves, toMove);
+	getMoves(move.to, moves, by);
 
 	Coord* chosen = nullptr;
 	for (Coord* it = moves.it(); it < moves.end(); ++it) {
@@ -18,9 +18,15 @@ bool Position::findValidMove(MoveInfo& move, const Player by) const {
 		Piece piece = board[it->y * BOARD_SIZE_X + it->x];
 		PieceType type = pieceToType(piece);
 
-		if (type != move.type) continue;
-		if (move.from.x != -1 && it->x != move.from.x) continue;
-		if (move.from.y != -1 && it->y != move.from.y) continue;
+		if (type != move.type) {
+			continue;
+		}
+		if (move.from.x != -1 && it->x != move.from.x) {
+			continue;
+		}
+		if (move.from.y != -1 && it->y != move.from.y) {
+			continue;
+		}
 
 		if (chosen) {
 			// Ambiguous move
@@ -42,9 +48,7 @@ bool Position::findValidMove(MoveInfo& move, const Player by) const {
 bool Position::makeMove(MoveInfo& move, const Player pl) {
 	if (move.castles != CS_NONE) {
 		// Castling
-		int side;
-
-		if (move.castles != CS_QSIDE && move.castles != CS_KSIDE) {
+		if (move.castles != QSIDE && move.castles != KSIDE) {
 			// Unknown castling side
 			return false; 
 		}
@@ -56,7 +60,9 @@ bool Position::makeMove(MoveInfo& move, const Player pl) {
 		castles(move.castles);
 	} else {
 		// Other piece placement
-		if (move.type == PT_NONE) return false;
+		if (move.type == VOID) {
+			return false;
+		}
 
 		if (!findValidMove(move, pl)) {
 			// Could not find a move that's valid in current position
@@ -67,11 +73,11 @@ bool Position::makeMove(MoveInfo& move, const Player pl) {
 			move.capture = true;
 		}	
 
-		placePiece(move.from, move.to, move.promote);
+		movePiece(move.from, move.to, move.promote);
 	}
 
 	// Updates move information
-	if (stateToType(state) == GS_CHECKMATE) {
+	if (stateToType(state) == CHECKMATE) {
 		move.checkmate = true;
 	} else if (!checks.isEmpty()) {
 		move.check = true;
@@ -83,6 +89,12 @@ bool Position::makeMove(MoveInfo& move, const Player pl) {
 
 bool Position::makeMove(MoveInfo& move) {
 	return makeMove(move, toMove);
+}
+
+bool Position::makeMove(const char* notation) {
+	MoveInfo move;
+	const char* it = notation;
+	return readMoveNotation(it, move) && makeMove(move);
 }
 
 }

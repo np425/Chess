@@ -3,9 +3,13 @@
 
 #include "position.h"
 
-class Chess {
-	Position pos;
-	
+// TODO: Tags, move history
+
+namespace chess {
+
+class ChessGame : public Position {
+};
+
 }
 
 #endif
