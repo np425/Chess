@@ -5,10 +5,10 @@
 
 namespace chess {
 
-bool tagExists(const TagName given, TagsArray& tags) {
-	for (const TagName* it = tags.tags; it < tags.end; it += 2) {
-		const char *origIt = *it;
-		const char *givenIt = given;
+bool tagExists(const Tag& tag, TagsArray& tags) {
+	for (const Tag* it = tags.it(); it < tags.end(); ++it) {
+		const char *origIt = it->name;
+		const char *givenIt = tag.name;
 
 		while (*origIt && *origIt == *givenIt) {
 			++origIt;
@@ -26,7 +26,10 @@ bool readTag(const char*& it, TagsArray& tags) {
 
 	while (isspace(*it)) ++it;
 
-	char *tagIt = *tags.end;
+	Tag* tag = tags.newIt();
+
+	char *tagIt = tag->name;
+	*tagIt = 0;
 
 	// Form tag name (could be separated by spaces)
 	while (*it != '"' && *it) {
@@ -39,19 +42,17 @@ bool readTag(const char*& it, TagsArray& tags) {
 	}
 
 	// Replace space with null terminator
-	if (*tags.end) *(--tagIt) = 0; 
+	if (*tagIt) *(--tagIt) = 0; 
 
-	if (!*tags.end || tagExists(*tags.end, tags)) {
+	if (!*tag->name || tagExists(*tag, tags)) {
 		return false; // End of string, no tag name or tag exists
 	}
 
-	++tags.end;
+	tagIt = tag->value;
 
 	// Opening tag value quotes
 	if (*it != '"') return false; 
 	++it;
-
-	tagIt = *tags.end;
 
 	// Read till second quotes
 	while (*it != '"' && *it) {
@@ -59,8 +60,7 @@ bool readTag(const char*& it, TagsArray& tags) {
 	}
 
 	// Closing tag value quotes
-	if (!*it || *it != '"' || tagIt == *tags.end) {
-		--tags.end; // Reset tags head
+	if (!*it || *it != '"' || tagIt == tag->value) {
 		return false; // End of string, no tag value or no quotes
 	} 
 	++it; 
@@ -69,12 +69,9 @@ bool readTag(const char*& it, TagsArray& tags) {
 
 	// Closing tag bracket
 	if (*it != ']') {
-		--tags.end; // Reset tags head
 		return false; 
 	}
 	++it;
-
-	++tags.end;
 
 	return true;
 }
@@ -109,12 +106,12 @@ bool readFinalResult(const char*& it, GameState& state, const unsigned lastMoveN
 			if (*it != '2') return false;
 
 			int sign = (lastMoveNum % 2 == 0 ? +1 : -1);
-			state = sign * GS_DRAW;
+			state = sign * DRAW;
 		} else if (*it == '-') {
 			++it;
 			if (*it != '0') return false;
 
-			state = +GS_WIN;
+			state = +WIN;
 		} else return false;
 	} else if (*it == '0') {
 		++it;
@@ -123,7 +120,7 @@ bool readFinalResult(const char*& it, GameState& state, const unsigned lastMoveN
 		++it;
 		if (*it != '1') return false;
 
-		state = -GS_WIN;
+		state = -WIN;
 	} else return false; // Unknown result
 
 	++it;
@@ -146,21 +143,21 @@ bool readMoveNum(const char*& it, unsigned& num) {
 }
 
 bool readMove(const char*& it, MovesArray& moves) {
+	NotatedMove* move = moves.newIt();
+
 	const char *itEnd = it;
 
 	// Comments inclusive
-	if (!readMoveNotation(itEnd, moves.end->move)) {
+	if (!readMoveNotation(itEnd, move->move)) {
 		return false; 
 	}
 
 	// Set notation in the moves array
-	char* notationIt = moves.end->notation;
+	char* notationIt = move->notation;
 	while (it != itEnd) {
 		*(notationIt++) = *(it++);
 	}
 	*notationIt = 0; // Null terminator
-
-	++moves.end;
 
 	return true;
 }
@@ -198,17 +195,17 @@ bool readMoves(const char*& it, MovesArray& moves, unsigned &lastMoveNum) {
 }
 
 bool readPGN(const char*& it, TagsArray& tags, MovesArray& moves, 
-             unsigned& lastMoveNum, GameState& state) {
+             unsigned& lastFullMove, GameState& state) {
 
 	while (isspace(*it)) ++it;
 	readTags(it, tags); // Skips whitespace
 
-	if (!readMoves(it, moves, lastMoveNum)) return false;
+	if (!readMoves(it, moves, lastFullMove)) return false;
 
 	const char *newIt = it;
 
 	// Result is optional
-	if (readFinalResult(newIt, state, lastMoveNum)) it = newIt;
+	if (readFinalResult(newIt, state, lastFullMove)) it = newIt;
 
 	return true;
 }

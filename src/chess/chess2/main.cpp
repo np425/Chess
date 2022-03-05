@@ -1,9 +1,11 @@
 #include <iostream>
+#include <fstream>
 #include "position.h"
 #include "display.h"
 #include "chess.h"
 
 using namespace chess;
+#define MAX_FILE_NAME 100
 
 enum InitialMenuChoice {
 	DEFAULT_POS = 1, CUSTOM_FEN, PGN_FILE
@@ -25,33 +27,83 @@ InitialMenuChoice handleInitialMenu() {
 	}
 }
 
-ChessGame promptInitialPosition() {
+bool loadPGNFromFile(const char* fileName, ChessGame& chess) {
+	std::ifstream f(fileName);
+	if (!f) {
+		std::cerr << "Failed to open file!" << std::endl;
+		return false;
+	}
+
+	char pgn[PGN_MAX_LENGTH];
+	char* it = pgn;
+	while (f >> std::noskipws >> *(it++));
+
+	return chess.loadPGN(pgn);
+}
+
+void promptInitialPosition(ChessGame& chess) {
 	while (true) {
+		bool error = false;
+
 		switch (handleInitialMenu()) {
 			case DEFAULT_POS: {
-				return ChessGame();
+				break;
 			}
 			case CUSTOM_FEN: {
-				std::cout << "To be continued, try something else!" << std::endl;
+				char notation[FEN_MAX_LENGTH];
+				std::cout << "Enter FEN: " << std::endl;
+				std::cin.getline(notation, FEN_MAX_LENGTH);
+				if (!chess.loadFEN(notation)) {
+					std::cerr << "Failed to load FEN, please try again!" << std::endl;
+					error = true;
+				}
 				break;
 			}
 			case PGN_FILE: {
-				std::cout << "To be continued, try something else!" << std::endl;
+				char fileName[MAX_FILE_NAME];
+				std::cout << "Enter file name: " << std::endl;
+				std::cin.getline(fileName, MAX_FILE_NAME);
+				if (!loadPGNFromFile(fileName, chess)) {
+					std::cerr << "Failed to load PGN, please try again!" << std::endl;
+					error = true;
+				}
 				break;
 			} default: {
 				std::cout << "Invalid option, try again!" << std::endl;
+				error = true;
 			}
+		}
+	
+		if (error) {
+			continue;
+		}
+
+		if (chess.validate()) {
+			return;
+		} else {
+			std::cerr << "Failed to validate position" << std::endl;
 		}
 	}
 }
 
 int main() {
 	std::cout << "Welcome to Chess!" << std::endl;
-	ChessGame chess = promptInitialPosition();
+	ChessGame chess;
+
+	//char fen[FEN_MAX_LENGTH];
+	//std::cout << "Enter FEN: " << std::endl;
+	//std::cin.getline(fen, FEN_MAX_LENGTH);
+	//if (!chess.loadFEN(fen)) {
+	//	std::cerr << "Failed to load FEN, please try again!" << std::endl;
+	//}
+
+	promptInitialPosition(chess);
 
 	if (!chess.validate()) {
 		std::cerr << "Invalid position" << std::endl;
 	}
+
+	std::cout << chess.getTags().size() << std::endl;
 
 	char notation[20];
 	displayBoard(chess.getBoard());

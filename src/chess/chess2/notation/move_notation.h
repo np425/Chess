@@ -12,7 +12,6 @@ Optimised move (algebraic) notation:
 
 */
 
-#define MAX_NOTATION_LENGTH 100
 
 namespace chess {
 

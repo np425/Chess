@@ -8,6 +8,9 @@
 #define BOARD_SIZE (BOARD_SIZE_X * BOARD_SIZE_Y)
 #define MAX_ATTACKERS 16
 #define FIRST_TO_MOVE WHITE
+#define TAG_LENGTH 30
+#define MAX_TAGS 30
+#define MAX_MOVES 200
 
 namespace chess {
 
@@ -43,7 +46,10 @@ struct Coord {
 	int y;
 };
 
-typedef FixedArray<Coord, MAX_ATTACKERS> CoordArray;
+struct Tag {
+	char name[TAG_LENGTH];
+	char value[TAG_LENGTH];
+};
 
 struct MoveInfo {
 	// bool drawOffer;
@@ -64,6 +70,24 @@ struct MoveInfo {
 	bool check;
 	bool checkmate;
 	CastlingSide castles;
+};
+
+struct NotatedMove {
+	MoveInfo move;
+	char notation[20]; 
+};
+
+typedef FixedArray<Coord, MAX_ATTACKERS> CoordArray;
+typedef FixedArray<Tag, MAX_TAGS> TagsArray;
+typedef FixedArray<NotatedMove, MAX_MOVES> MovesArray;
+
+struct PositionInfo {
+	Player toMove = WHITE;
+	GameState state = PLAYING;
+	CastlingPerms castlePerms[2] = {KSIDE | QSIDE, KSIDE | QSIDE};
+	Coord passant = {-1,-1};
+	unsigned fullMoves = 0;
+	unsigned halfMoves = 0;
 };
 
 }

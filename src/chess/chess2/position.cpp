@@ -27,19 +27,41 @@ Coord Position::getPassant() const {
 	return passant;
 }
 
-Position::Position(Board newBoard) : board(newBoard) {
-	toMove = FIRST_TO_MOVE;
-	castlePerms[0] = QSIDE | KSIDE;
-	castlePerms[1] = QSIDE | KSIDE;
-	passant = {-1,-1};
+Position::Position(Board newBoard, PositionInfo info) : board(newBoard) {
+	changePositionInfo(info);
+}
+
+
+Position::Position(const char* notation) {
+	loadFEN(notation);
+}
+
+bool Position::loadFEN(const char* notation) {
+	const char* it = notation;
+	Board newBoard;
+	PositionInfo newPosInfo;
+	if (!readFEN(it, newBoard, newPosInfo)) {
+		return false;
+	}
+
+	changeBoard(newBoard);
+	changePositionInfo(newPosInfo);
+	
+	return true;
 }
 
 void Position::changeBoard(Board newBoard) {
 	board = newBoard;
-	toMove = FIRST_TO_MOVE;
-	castlePerms[0] = QSIDE | KSIDE;
-	castlePerms[1] = QSIDE | KSIDE;
-	passant = {-1,-1};
+}
+
+void Position::changePositionInfo(const PositionInfo& info) {
+	toMove = info.toMove;
+	castlePerms[0] = info.castlePerms[0];
+	castlePerms[1] = info.castlePerms[1];
+	passant = info.passant;
+	state = info.state;
+	fullMoves = info.fullMoves;
+	halfMoves = info.halfMoves;
 }
 
 }

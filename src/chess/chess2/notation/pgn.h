@@ -1,9 +1,9 @@
 #ifndef CHESS_PGN_H
 #define CHESS_PGN_H
 
-#define PGN_MAX_LENGTH 200
+#define PGN_MAX_LENGTH 3000
 
-#include "types.h"
+#include "../board.h"
 
 /*
 
@@ -19,7 +19,7 @@ Simplified PGN notation:
 namespace chess {
 
 // Checks if a given tag exists in tags array
-bool tagExists(const TagName given, TagsArray& tags);
+bool tagExists(const Tag& tag, const TagsArray& tags);
 
 // Reads a tag into tagsArray
 // Returns: 

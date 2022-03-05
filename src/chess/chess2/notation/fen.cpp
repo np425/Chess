@@ -3,6 +3,7 @@
 #include <cctype> // isupper, tolower, isspace
 
 namespace chess {
+
 unsigned readFENSquare(const char*& it, Piece& piece) {
 	unsigned char chr = toupper(*it);
 
@@ -10,7 +11,7 @@ unsigned readFENSquare(const char*& it, Piece& piece) {
 		// If not a piece, then must be empty squares
 		if (chr < '1' || chr > '8') return 0;
 
-		piece = PT_NONE;
+		piece = VOID;
 		++it;
 		return chr - '0';
 	}
@@ -23,11 +24,11 @@ unsigned readFENSquare(const char*& it, Piece& piece) {
 	return 1;
 }
 	
-bool readBoard(const char*& it, Piece* board) {
+bool readBoard(const char*& it, Board& board) {
 	// Board reading from white's perspective
 	for (int y = BOARD_SIZE_Y - 1; y >= 0; --y) {
 		for (int x = 0; x < BOARD_SIZE_X; ) {
-			Piece& piece = board[y*BOARD_SIZE_X+x];
+			Piece piece;
 			unsigned read = readFENSquare(it, piece);
 
 			if (!read || x + read > BOARD_SIZE_X) {
@@ -35,12 +36,8 @@ bool readBoard(const char*& it, Piece* board) {
 			}
 
 			// Populate board with appropriate amount of pieces
-			// First square already set
-			--read;
-			++x;
-
 			while (read != 0) {
-				board[y*BOARD_SIZE_X+x] = piece;
+				board.movePiece(piece, {x,y});
 				++x;
 				--read;
 			}
@@ -54,10 +51,10 @@ bool readBoard(const char*& it, Piece* board) {
 bool readPlayer(const char*& it, Player& player) {
 	switch (tolower(*it)) {
 		case 'w':
-			player = PL_WHITE;
+			player = WHITE;
 			break;
 		case 'b':
-			player = PL_BLACK;
+			player = BLACK;
 			break;
 		default:
 			return false;
@@ -67,12 +64,10 @@ bool readPlayer(const char*& it, Player& player) {
 	return true;
 }
 
-bool readCastlingRights(const char*& it, bool canCastle[2][2]) {
+bool readCastlingRights(const char*& it, CastlingPerms castlePerms[2]) {
 	// Invalidate castling
-	canCastle[0][0] = false;
-	canCastle[0][1] = false;
-	canCastle[1][0] = false;
-	canCastle[1][1] = false;
+	castlePerms[0] = CS_NONE;
+	castlePerms[1] = CS_NONE;
 
 	if (*it == '-') { // No castling 
 		++it;
@@ -81,18 +76,18 @@ bool readCastlingRights(const char*& it, bool canCastle[2][2]) {
 
 	bool foundOne = false;
 	while (true) {
-		Player player = (isupper(*it) ? PL_WHITE : PL_BLACK);
+		Player player = (isupper(*it) ? WHITE : BLACK);
 		unsigned char chr = tolower(*it);
 
-		int side;
+		CastlingSide side;
 
 		switch (chr) {
 			case 'k':
-				side = 1;
+				side = KSIDE;
 				foundOne = true;
 				break;
 			case 'q':
-				side = 0;
+				side = QSIDE;
 				foundOne = true;
 				break;
 			default:
@@ -101,7 +96,7 @@ bool readCastlingRights(const char*& it, bool canCastle[2][2]) {
 		}
 
 		// Allows repetitive castling rights
-		canCastle[player][side] = true;
+		castlePerms[player] |= side;
 		++it;
 	}	
 }
@@ -117,48 +112,54 @@ bool readPassant(const char*& it, Coord& sqr) {
 	return readX(it, sqr.x) && readY(it, sqr.y);
 }
 
-bool readFENPosition(const char*& it, Position& pos) {
-	while (isspace(*it)) ++it; // Skip whitespace
+bool readFEN(const char*& it, Board& board, PositionInfo& pos) {
+	while (isspace(*it)) {
+		++it; 
+	}
 
 	// 1. Board
-	if (!readBoard(it, pos.board)) return false;
-	while (isspace(*it)) ++it;
+	if (!readBoard(it, board)) {
+		return false;
+	}
+	while (isspace(*it)) {
+		++it;
+	}
 
 	// 2. Player to move
-	if (!readPlayer(it, pos.toMove)) return false;
-	while (isspace(*it)) ++it;
+	if (!readPlayer(it, pos.toMove)) {
+		return false;
+	}
+	while (isspace(*it)) {
+		++it;
+	}
 				
 	// 3. Castling rights
-	if (!readCastlingRights(it, pos.canCastle)) return false;
-	while (isspace(*it)) ++it;
+	if (!readCastlingRights(it, pos.castlePerms)) {
+		return false;
+	}
+	while (isspace(*it)) {
+		++it;
+	}
 
 	// 4. Passant
-	if (!readPassant(it, pos.passant)) return false;
-	
-	return true;
-}
-
-bool readFEN(const char*& it, Position& pos, Count& count) {
-	// 1. Board
-	// 2. Player to move
-	// 3. Castling rights
-	// 4. Passant
-	if (!readFENPosition(it, pos)) return false;
-	while (isspace(*it)) ++it; 
+	if (!readPassant(it, pos.passant)) {
+		return false;
+	}
+	while (isspace(*it)) {
+		++it;
+	}
 			
 	// 5. Half moves
-	if (!readPositiveInteger(it, count.half)) return false;
-	while (isspace(*it)) ++it;
+	if (!readPositiveInteger(it, pos.halfMoves)) {
+		return false;
+	}
+	while (isspace(*it)) {
+		++it;
+	}
 
 	// 6. Full moves
-	unsigned fullMoves;
-	if (!readPositiveInteger(it, fullMoves)) return false;
-
-	// Convert full moves to all moves
-	count.moves = (fullMoves-1) * 2; 
-	if (pos.toMove == PL_BLACK) {
-		// If player to move is black, that means white has already moved
-		++count.moves;
+	if (!readPositiveInteger(it, pos.fullMoves)) {
+		return false;
 	}
 
 	return true;

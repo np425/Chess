@@ -9,10 +9,13 @@ Chess position definitions: variables and mechanics
 
 #include "board.h"
 #include "notation/move_notation.h"
+#include "notation/fen.h"
 
 namespace chess {
 
+
 class Position {
+protected:
 	Board board;
 
 	/* Positional variables */
@@ -20,6 +23,8 @@ class Position {
 	GameState state;
 	CastlingPerms castlePerms[2];
 	Coord passant;
+	unsigned halfMoves;
+	unsigned fullMoves;
 
 	/* Meta Information to improve processing speed */
 	CoordArray checks; // Depends on current player
@@ -64,8 +69,11 @@ public:
 	bool makeMove(MoveInfo& move); // Also updates MoveInfo
 	bool makeMove(const char* notation);
 
-	//Position(Board newBoard={}) : board(newBoard) {};
-	Position(Board newBoard={});
+	Position(Board={}, PositionInfo={});
+	Position(const char*);
+
+	void changePositionInfo(const PositionInfo&);
+	bool loadFEN(const char*);
 
 	/* Board */
 	void changeBoard(Board newBoard);

@@ -20,6 +20,8 @@ public:
 	T* it();
 	const T* it() const;
 	const T* end() const;
+
+	T* newIt();
 };
 
 template <typename T, unsigned S>
@@ -65,6 +67,11 @@ const T* FixedArray<T,S>::it() const {
 template <typename T, unsigned S>
 const T* FixedArray<T,S>::end() const {
 	return head;
+}
+
+template <typename T, unsigned S>
+T* FixedArray<T,S>::newIt() {
+	return head++;
 }
 
 #endif
