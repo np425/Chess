@@ -1,5 +1,4 @@
 #include "chess.h"
-#include <iostream>
 
 namespace chess {
 
@@ -41,7 +40,6 @@ bool ChessGame::buildPosFromMoves() {
 	while (move < moves.end() && !isGameOver()) {
 		if (!Position::makeMove(move->move)) {
 			// Invalid move
-			std::cerr << "Failed to load @ : " << move-moves.it() << " " << move->notation << std::endl;
 			return false;
 		}
 		++move;

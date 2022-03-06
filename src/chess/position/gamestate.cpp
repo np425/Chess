@@ -1,94 +1,93 @@
-#include "gamestate.h"
-#include "defends.h" // getDefenders
-#include "moves.h" // getMoves
-#include "../utils.h" // pieceToType, numSign, pieceToPlayer, getPlayerSign
+#include "../position.h"
 
 namespace chess {
 
-bool isCheckmate(const Position& pos, const Player pl) {
-   	CoordArray moves;
-   	unsigned checksAmount = pos.checks.end - pos.checks.coords;
+// IDEA: Maybe rewrite Coord to a proper class?
 
-   	if (checksAmount == 0) return false;
-   	
+bool Position::isCheckmate(const Player pl) const {
+	CoordArray moves;
+	unsigned checksAmount = checks.size();
+	Coord kPos = board.getKingPos(pl);
+
+	if (checksAmount == 0) return false;
+	
 	if (checksAmount == 1) {
-       	// 1. Attack the attacker (the one who checks)
-		getMoves(pos, pos.checks.coords[0], moves, pl);
-       	if (moves.end != moves.coords) return false;
+		// 1. Attack the attacker (the one who checks)
+		getMoves(checks[0], moves, pl);
+		if (!moves.isEmpty()) return false;
 
 		// Coordinates for checks
-		int cy = pos.checks.coords[0].y;
-		int cx = pos.checks.coords[0].x;
+		int cy = checks[0].y;
+		int cx = checks[0].x;
 
-       	// 2. Block the attacker (only if the check is not a knight or a pawn)
-		//Piece piece = pos.board[cy * BOARD_SIZE_X + cx];
-       	//PieceType checkType = pieceToType(piece);
+		// 2. Block the attacker (only if the check is not a knight or a pawn)
+		int diffY = cy - kPos.y;
+		int diffX = cx - kPos.x;
 
-       	//if (checkType != PT_KNIGHT && checkType != PT_PAWN) {
-			int diffY = cy - pos.kingPos[pl].y;
-			int diffX = cx - pos.kingPos[pl].x;
+		int signY = numSign(diffY);
+		int signX = numSign(diffX);
 
-			int signY = numSign(diffY);
-			int signX = numSign(diffX);
+        int y = kPos.y + signY;
+        int x = kPos.x + signX;
 
-           	int y = pos.kingPos[pl].y + signY;
-           	int x = pos.kingPos[pl].x + signX;
-
-			// From king towards the check 
-           	for (int iy = y, ix = x; iy != cy && ix != cx; iy += signY, ix += signX) {	
-				getMoves(pos, {iy,ix}, moves, pl);
-               	if (moves.end != moves.coords) return false;
-           	}
-		//}
+		// From king towards the check 
+        for (int iy = y, ix = x; iy != cy && ix != cx; iy += signY, ix += signX) {	
+			getMoves({iy,ix}, moves, pl);
+			if (!moves.isEmpty()) return false;
+		}
 	}
     
-   	// 3. If there is more than 1 check, only legal move is to move the king
-   	for (int ySign = -1; ySign <= 1; ++ySign) {
-       	int y = pos.kingPos[pl].y + ySign;
-       	if (y < 0 || y >= BOARD_SIZE_Y) continue;
+	// 3. If there is more than 1 check, only legal move is to move the king
+	for (int ySign = -1; ySign <= 1; ++ySign) {
+		int y = kPos.y + ySign;
+		if (y < 0 || y >= BOARD_SIZE_Y) continue;
 
-       	for (int xSign = -1; xSign <= 1; ++xSign) {
-           	if (xSign == 0 && ySign == 0) continue;
+		for (int xSign = -1; xSign <= 1; ++xSign) {
+			if (xSign == 0 && ySign == 0) continue;
 
-           	int x = pos.kingPos[pl].x + xSign;
+			int x = kPos.x + xSign;
 
 			if (x < 0 || x >= BOARD_SIZE_X) continue;
 
-			if (canMove(pos, pos.kingPos[pl], {x, y})) {
+			if (canMove(kPos, {x,y})) {
 				return false;
 			}
 		}
     }
-   	return true;
+	return true;
 }
 
-bool isStalemate(const Position& pos, const Player pl) {
-   	CoordArray moves;
+bool Position::isStalemate(const Player pl) const {
+	CoordArray moves;
 
-   	for (int y = 0; y < BOARD_SIZE_Y; ++y) {
-       	for (int x = 0; x < BOARD_SIZE_X; ++x) {
-           	if (pieceToPlayer(pos.board[y*BOARD_SIZE_X+x]) == pl) continue;
+	for (int y = 0; y < BOARD_SIZE_Y; ++y) {
+		for (int x = 0; x < BOARD_SIZE_X; ++x) {
+			if (pieceToPlayer(board[y*BOARD_SIZE_X+x]) == pl) continue;
 
-			getMoves(pos, {y,x}, moves, pl);
-           	if (moves.coords != moves.end) return false;
-       	}
-   	}
-   	return true;
+			getMoves({y,x}, moves, pl);
+			if (!moves.isEmpty()) return false;
+		}
+	}
+	return true;
 }
 
-void updateGameState(Position& pos) {
-   	// Sign is from the perspective of the opponent
-   	int sign = getPlayerSign((Player)!pos.toMove);
+void Position::updateGameState() {
+	// Sign is from the perspective of the opponent
+	int sign = getPlayerSign((Player)!toMove);
 
-   	if (isCheckmate(pos, pos.toMove)) {
-		pos.state = GS_CHECKMATE;
-   	} else if (isStalemate(pos, pos.toMove)) {
-		pos.state = GS_STALEMATE;
-   	} else {
-		pos.state = GS_PLAYING;
+	if (isCheckmate(toMove)) {
+		state = CHECKMATE;
+	} else if (isStalemate(toMove)) {
+		state = STALEMATE;
+	} else {
+		state = PLAYING;
 	}
 
-	pos.state *= sign;
+	state *= sign;
+}
+
+bool Position::isGameOver() const {
+	return state != PLAYING;
 }
 
 }

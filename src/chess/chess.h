@@ -1,16 +1,27 @@
 #ifndef CHESS_H
 #define CHESS_H
 
-const char* const STARTING_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+#include "position.h"
+#include "notation/pgn.h"
 
-#include "types.h"
-//#include "display.h"
-#include "fen.h"
-#include "move_notation.h"
-#include "pgn.h"
-#include "utils.h"
+namespace chess {
 
-#include "position/position.h"
-#include "game/game.h"
+class ChessGame : public Position {
+	TagsArray tags;
+	MovesArray moves;
+
+	bool buildPosFromMoves();
+public:
+	ChessGame(const char*);
+	ChessGame(Board={}, PositionInfo={}, TagsArray tags={}, MovesArray moves={});
+
+	const TagsArray& getTags() const;
+	const MovesArray& getPreviousMoves() const;
+
+	bool loadPGN(const char*);
+	bool buildPosFromMoves(MovesArray& moves);
+};
+
+}
 
 #endif
