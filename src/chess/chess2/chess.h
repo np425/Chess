@@ -10,6 +10,7 @@ class ChessGame : public Position {
 	TagsArray tags;
 	MovesArray moves;
 
+	bool buildPosFromMoves();
 public:
 	ChessGame(const char*);
 	ChessGame(Board={}, PositionInfo={}, TagsArray tags={}, MovesArray moves={});
@@ -18,6 +19,7 @@ public:
 	const MovesArray& getPreviousMoves() const;
 
 	bool loadPGN(const char*);
+	bool buildPosFromMoves(MovesArray& moves);
 };
 
 }

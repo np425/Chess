@@ -10,10 +10,13 @@ class FixedArray {
 
 public:
 	FixedArray();
+	FixedArray(const FixedArray&);
+	FixedArray& operator=(FixedArray arr);
 	T operator[](unsigned) const;
 
 	void append(T item);
-	void clear();
+	void pop();
+	void reset();
 	bool isEmpty() const;
 	unsigned size() const;
 
@@ -23,6 +26,30 @@ public:
 
 	T* newIt();
 };
+
+template <typename T, unsigned S>
+void FixedArray<T,S>::pop() {
+	if (head > elem) {
+		--head;
+	}
+}
+
+template <typename T, unsigned S>
+FixedArray<T,S>::FixedArray(const FixedArray& arr) {
+	head = elem;
+	for (const T* it = arr.it(); it < arr.end(); ++it) {
+		*(head++) = *it;
+	}
+}
+
+template <typename T, unsigned S>
+FixedArray<T,S>& FixedArray<T,S>::FixedArray::operator=(FixedArray arr) {
+	head = elem;
+	for (const T* it = arr.it(); it < arr.end(); ++it) {
+		*(head++) = *it;
+	}
+	return *this;
+}
 
 template <typename T, unsigned S>
 FixedArray<T,S>::FixedArray() {
@@ -40,7 +67,7 @@ void FixedArray<T,S>::append(T item) {
 }
 
 template <typename T, unsigned S>
-void FixedArray<T,S>::clear() {
+void FixedArray<T,S>::reset() {
 	head = elem;
 }
 

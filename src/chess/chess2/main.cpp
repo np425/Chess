@@ -103,8 +103,6 @@ int main() {
 		std::cerr << "Invalid position" << std::endl;
 	}
 
-	std::cout << chess.getTags().size() << std::endl;
-
 	char notation[20];
 	displayBoard(chess.getBoard());
 

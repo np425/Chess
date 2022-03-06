@@ -60,12 +60,9 @@ void Position::castles(const CastlingSide side) {
 	int ry = toMove * (BOARD_SIZE_Y - 1);
 	int xSign = (side ? 1 : -1);
 
-	int kCoord = ry*BOARD_SIZE_X+kPos.x;
-	int rCoord = ry*BOARD_SIZE_X+rx;
-
 	// Move pieces
-	board.movePiece(kCoord, {kCoord + 2 * xSign, ry});
-	board.movePiece(rCoord, {kCoord + xSign, ry});
+	board.movePiece(kPos, {kPos.x + 2 * xSign, ry});
+	board.movePiece({rx,ry}, {kPos.x + xSign, ry});
 
 	// Invalidate castling variables
 	castlePerms[toMove] = CS_NONE;

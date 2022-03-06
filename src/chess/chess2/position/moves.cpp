@@ -182,7 +182,7 @@ bool Position::doesMovePreventCheck(const Coord& from, const Coord& to) const {
 			// 1. Attack the piece
 			if (type == KING) {
 				// If taking with the king, make sure the piece is not defended
-				defenders.clear();
+				defenders.reset();
 				getDefenders(to, defenders, (Player)!pl);
 				return defenders.isEmpty();
 			} else {

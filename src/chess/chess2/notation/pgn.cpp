@@ -5,7 +5,7 @@
 
 namespace chess {
 
-bool tagExists(const Tag& tag, TagsArray& tags) {
+bool tagExists(const Tag& tag, const TagsArray& tags) {
 	for (const Tag* it = tags.it(); it < tags.end(); ++it) {
 		const char *origIt = it->name;
 		const char *givenIt = tag.name;
@@ -20,35 +20,35 @@ bool tagExists(const Tag& tag, TagsArray& tags) {
 	return false;
 }
 
-bool readTag(const char*& it, TagsArray& tags) {
+bool readTag(const char*& it, Tag& tag, const TagsArray& tags) {
 	if (*it != '[') return false; // Missing opening tag brackets	
 	++it;
 
 	while (isspace(*it)) ++it;
 
-	Tag* tag = tags.newIt();
-
-	char *tagIt = tag->name;
+	char *tagIt = tag.name;
 	*tagIt = 0;
 
 	// Form tag name (could be separated by spaces)
 	while (*it != '"' && *it) {
+		if (*tagIt == ' ') ++tagIt;
+
 		while (!isspace(*it) && *it != '"') {
 			*(tagIt++) = *(it++);
 		}
 
-		*(tagIt++) = ' ';
-		while (isspace(*it)) ++it;
+		*tagIt = ' ';
+		while (isspace(*it)) {
+			++it;
+		}
 	}
 
-	// Replace space with null terminator
-	if (*tagIt) *(--tagIt) = 0; 
-
-	if (!*tag->name || tagExists(*tag, tags)) {
+	*tagIt = 0;
+	if (!*tag.name || tagExists(tag, tags)) {
 		return false; // End of string, no tag name or tag exists
 	}
 
-	tagIt = tag->value;
+	tagIt = tag.value;
 
 	// Opening tag value quotes
 	if (*it != '"') return false; 
@@ -60,7 +60,7 @@ bool readTag(const char*& it, TagsArray& tags) {
 	}
 
 	// Closing tag value quotes
-	if (!*it || *it != '"' || tagIt == tag->value) {
+	if (!*it || *it != '"' || !*tag.value) {
 		return false; // End of string, no tag value or no quotes
 	} 
 	++it; 
@@ -79,9 +79,11 @@ bool readTag(const char*& it, TagsArray& tags) {
 void readTags(const char*& it, TagsArray& tags) {
 	const char* newIt = it;
 
-	while (readTag(newIt, tags)) {
+	Tag tag;
+	while (readTag(newIt, tag, tags)) {
 		while (isspace(*newIt)) ++newIt;
 		it = newIt;
+		tags.append(tag);
 	}
 }
 
@@ -142,18 +144,16 @@ bool readMoveNum(const char*& it, unsigned& num) {
 	return true;
 }
 
-bool readMove(const char*& it, MovesArray& moves) {
-	NotatedMove* move = moves.newIt();
-
+bool readMove(const char*& it, NotatedMove& move) {
 	const char *itEnd = it;
 
 	// Comments inclusive
-	if (!readMoveNotation(itEnd, move->move)) {
+	if (!readMoveNotation(itEnd, move.move)) {
 		return false; 
 	}
 
 	// Set notation in the moves array
-	char* notationIt = move->notation;
+	char* notationIt = move.notation;
 	while (it != itEnd) {
 		*(notationIt++) = *(it++);
 	}
@@ -173,7 +173,7 @@ bool readMoves(const char*& it, MovesArray& moves, unsigned &lastMoveNum) {
 
 	unsigned count = 0; // For keeping track of full moves
 
-	while (readMove(it, moves)) {
+	while (readMove(it, *moves.newIt())) {
 		while (isspace(*it)) ++it; 
 		++lastMoveNum;
 		++count;
@@ -185,6 +185,8 @@ bool readMoves(const char*& it, MovesArray& moves, unsigned &lastMoveNum) {
 			}
 		} else fullMoveNum = 0;
 	}
+
+	moves.pop();
 
 	// Must be move after move number
 	if (fullMoveNum) return false;

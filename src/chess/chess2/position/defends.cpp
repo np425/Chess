@@ -47,7 +47,7 @@ void Position::getDefenders(const Coord& coord, CoordArray& defenders, const Pla
 }
 
 void Position::updateChecks(const Player pl) {
-	checks.clear();
+	checks.reset();
 	getDefenders(board.getKingPos(pl), checks, (Player)!pl);
 }
 

@@ -25,7 +25,7 @@ bool tagExists(const Tag& tag, const TagsArray& tags);
 // Returns: 
 // - nullptr if no tag or malformed tag
 // - pointer to where it stopped reading otherwise
-bool readTag(const char*& it, TagsArray& tags);
+bool readTag(const char*& it, Tag& tag, const TagsArray& tags);
 
 // Reads all tags until none are left into the tags array
 void readTags(const char*& it, TagsArray& tags);
@@ -44,7 +44,7 @@ bool readFinalResult(const char*& it, GameState& state, const unsigned lastMoveN
 bool readMoveNum(const char*& it, unsigned& num);
 
 // Reads a move and saves it in moves array, including given notation
-bool readMove(const char*& it, MovesArray& moves);
+bool readMove(const char*& it, NotatedMove& move);
 
 // Reads all moves until none are left into moves array, including notation
 // Full move number is optional except for the first move, 
