@@ -181,4 +181,10 @@ void displayMoveInfo(const MoveInfo& move) {
 	          << (move.castles & KSIDE ? "true" : "false") << std::endl;
 }
 
+void displayTags(const TagsArray& tags) {
+	for (const Tag* it = tags.it(); it < tags.end(); ++it) {
+		std::cout << it->name << ": " << it->value << std::endl;
+	}
+}
+
 }

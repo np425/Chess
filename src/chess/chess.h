@@ -11,6 +11,7 @@ class ChessGame : public Position {
 	MovesArray moves;
 
 	bool buildPosFromMoves();
+	Tag* findTag(const char*);
 public:
 	ChessGame(const char*);
 	ChessGame(Board={}, PositionInfo={}, TagsArray tags={}, MovesArray moves={});
@@ -20,6 +21,8 @@ public:
 
 	bool loadPGN(const char*);
 	bool buildPosFromMoves(MovesArray& moves);
+
+	void updateTag(Tag tag);
 };
 
 }

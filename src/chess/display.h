@@ -16,6 +16,7 @@ void displayPosInfo(const Position& pos);
 void displayPieces(const Board& board, const CoordArray& squares);
 
 void displayMoveInfo(const MoveInfo& move);
+void displayTags(const TagsArray& tags);
 
 }
 

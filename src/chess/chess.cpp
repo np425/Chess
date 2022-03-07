@@ -1,4 +1,5 @@
 #include "chess.h"
+#include <cstring>
 
 namespace chess {
 
@@ -55,6 +56,26 @@ bool ChessGame::buildPosFromMoves() {
 bool ChessGame::buildPosFromMoves(MovesArray& newMoves) {
 	moves = newMoves;
 	return buildPosFromMoves();
+}
+
+Tag* ChessGame::findTag(const char* tagName) {
+	Tag* it = tags.it();
+	while (it < tags.end()) {
+		if (strcmp(it->name, tagName) == 0) {
+			return it;
+		}
+		++it;
+	}
+	return it;
+}
+
+void ChessGame::updateTag(Tag tag) {
+	Tag* it = findTag(tag.name);
+	if (it != tags.end()) {
+		*it = tag;
+	} else {
+		tags.append(tag);
+	}
 }
 
 }
