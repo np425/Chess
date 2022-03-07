@@ -15,15 +15,27 @@ enum TagMenuChoice {
 	ADD_TAG = 1, QUIT_TAG_MENU
 };
 
-const Tag* findTag(const char* tagName, const TagsArray& tags) {
-	const Tag* it;
-	while (it < tags.end()) {
-		if (strcmp(it->name, tagName) == 0) {
-			return it;
+enum EndMenuChoice {
+	SAVE_PGN = 1, PLAY_AGAIN, QUIT_GAME
+};
+
+EndMenuChoice handleEndMenu() {
+	int choice;
+	while (true) {
+		std::cout << "Would you like to: " << std::endl;
+		std::cout << "1. Save PGN to file?" << std::endl;
+		std::cout << "2. Play again?" << std::endl;
+		std::cout << "3. Quit the game?" << std::endl;
+		std::cout << "Enter a number for selected option: ";
+
+		std::cin >> choice;
+		std::cin.ignore();
+		if (choice >= SAVE_PGN && choice <= QUIT_GAME) {
+			return (EndMenuChoice)choice;
+		} else {
+			std::cout << "I didn't understand, please try again." << std::endl;
 		}
-		++it;
 	}
-	return it;
 }
 
 TagMenuChoice handleTagMenu() {
@@ -188,31 +200,110 @@ void promptInitialPosition(ChessGame& chess) {
 	}
 }
 
+bool savePGNToFile(const char* fileName, const ChessGame& chess) {
+	std::ofstream f(fileName);
+
+	if (!f) {
+		std::cerr << "Failed to open the file!" << std::endl;
+		return false;
+	}
+
+	for (const Tag* it = chess.getTags().it(); it < chess.getTags().end(); ++it) {
+		f << "[" << it->name << " \"" << it->value << "\"]" << std::endl;
+	}
+
+	f << std::endl;
+
+	unsigned moveNum = 0;
+	const MovesArray& moves = chess.getPreviousMoves();
+	for (const NotatedMove* it = moves.it(); it < moves.end(); ++it) {
+		if (moveNum % 2 == 0) {
+			f << (moveNum / 2) + 1 << ". ";
+		}
+		f << it->notation << " ";
+		++moveNum;
+	}
+
+	// Game can only end by stalemate or checkmate
+	GameState state = chess.getState();
+	switch (stateToType(state)) {
+		case WIN:
+		case CHECKMATE: {
+			Player player = stateToPlayer(state);
+			if (player == WHITE) {
+				f << "1-0";
+			} else {
+				f << "0-1";
+			}
+			break;
+		}
+		case DRAW:
+		case STALEMATE:
+		case PLAYING:
+			f << "1/2-1/2";
+			break;
+		default:
+			f << "???";
+	}
+
+	return true;
+}
+
 int main() {
 	std::cout << "Welcome to Chess!" << std::endl;
-	ChessGame chess;
+	while (true) {
+		ChessGame chess;
 
-	promptInitialPosition(chess);
+		promptInitialPosition(chess);
 
-	if (!chess.validate()) {
-		std::cerr << "Invalid position" << std::endl;
-	}
-
-	char notation[20];
-	displayBoard(chess.getBoard());
-
-	while (!chess.isGameOver()) {
-		std::cout << playerToString(chess.getPlayer()) << " to move: ";
-		std::cin >> notation;
-		if (!chess.makeMove(notation)) {
-			std::cerr << "Invalid move, please try again" << std::endl;
-		} else {
-			displayBoard(chess.getBoard());
+		if (!chess.validate()) {
+			std::cerr << "Invalid position" << std::endl;
 		}
-	}
 
-	std::cout << "Game ended with " << stateToString(chess.getState())
-	          << " by " << playerToString(stateToPlayer(chess.getPlayer())) << std::endl;
+		char notation[20];
+		displayBoard(chess.getBoard());
+
+		while (!chess.isGameOver()) {
+			std::cout << playerToString(chess.getPlayer()) << " to move: ";
+			std::cin >> notation;
+			if (!chess.makeMove(notation)) {
+				std::cerr << "Invalid move, please try again" << std::endl;
+			} else {
+				displayBoard(chess.getBoard());
+			}
+		}
+
+		std::cout << "Game ended with " << stateToString(chess.getState())
+	   	       	  << " by " << playerToString(stateToPlayer(chess.getPlayer())) << std::endl;
+
+		bool quitGame = false;
+		bool repeatMenu = false;
+
+		do {
+			repeatMenu = false;
+
+			switch (handleEndMenu()) {
+				case SAVE_PGN: {
+					char fileName[MAX_FILE_NAME];
+					std::cout << "Enter file name: " << std::endl;
+					std::cin.getline(fileName, MAX_FILE_NAME);
+					if (!savePGNToFile(fileName, chess)) {
+						std::cerr << "Failed to save PGN to the file, please try again!" << std::endl;
+					}
+					repeatMenu = true;
+					break;
+				} case PLAY_AGAIN: {
+					repeatMenu = true;
+					break;
+				} case QUIT_GAME: {
+					quitGame = true;
+					break;
+				}
+			}
+		} while (repeatMenu);
+
+		if (quitGame) break;
+	}
 
 	return 0;
 }

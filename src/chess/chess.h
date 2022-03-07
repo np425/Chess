@@ -23,6 +23,7 @@ public:
 	bool buildPosFromMoves(MovesArray& moves);
 
 	void updateTag(Tag tag);
+	bool makeMove(const char*);
 };
 
 }

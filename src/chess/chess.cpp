@@ -78,4 +78,20 @@ void ChessGame::updateTag(Tag tag) {
 	}
 }
 
+bool ChessGame::makeMove(const char* notation) {
+	NotatedMove move;
+	const char* it = notation;
+	if (!readMoveNotation(it, move.move) || !Position::makeMove(move.move)) {
+		return false;
+	}
+	const char* it2 = notation;
+	char* it3 = move.notation;
+	while (it2 < it) {
+		*(it3++) = *(it2++);
+	}
+	*it3 = 0;
+	moves.append(move);
+	return true;
+}
+
 }
