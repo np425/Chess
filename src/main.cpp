@@ -7,6 +7,18 @@
 using namespace chess;
 #define MAX_FILE_NAME 100
 
+#define FEN_L_ARG "--FEN"
+#define FEN_S_ARG "-F"
+
+#define PGN_L_ARG "--PGN"
+#define PGN_S_ARG "-P"
+
+#define DEF_L_ARG "--DEF"
+#define DEF_S_ARG "-D"
+
+#define TAG_L_ARG "--TAGS"
+#define TAG_S_ARG "-T"
+
 enum InitialMenuChoice {
 	DEFAULT_POS = 1, CUSTOM_FEN, PGN_FILE, DESCRIBE_GAME
 };
@@ -152,7 +164,7 @@ void describeGame(ChessGame& chess) {
 }
 
 void promptInitialPosition(ChessGame& chess) {
-	while (true) {
+while (true) {
 		bool again = false;
 
 		switch (handleInitialMenu()) {
@@ -246,35 +258,239 @@ bool savePGNToFile(const char* fileName, const ChessGame& chess) {
 			f << "???";
 	}
 
+	f << std::endl;
+
 	return true;
 }
 
-int main() {
-	std::cout << "Welcome to Chess!" << std::endl;
+InitialMenuChoice readArgumentName(char* str) {
+	if (strcmp(str, FEN_L_ARG) == 0 || strcmp(str, FEN_S_ARG) == 0) {
+		return CUSTOM_FEN;
+	} else if (strcmp(str, PGN_L_ARG) == 0 || strcmp(str, PGN_S_ARG) == 0) {
+		return PGN_FILE;
+	} else if (strcmp(str, DEF_L_ARG) == 0 || strcmp(str, DEF_S_ARG) == 0) {
+		return DEFAULT_POS;
+	} else if (strcmp(str, TAG_L_ARG) == 0 || strcmp(str, TAG_S_ARG) == 0) {
+		return DESCRIBE_GAME;
+	} 
+	return (InitialMenuChoice)0;
+}
+
+bool loadArgumentFEN(int argc, char** argv, int& i, ChessGame& chess) {
+	char notation[100];
+	char* it = notation;
+	int x = i+1;
+
+	*it = 0;
+	while (x < argc && readArgumentName(argv[x]) == 0) {
+		for (char* argIt = argv[x]; *argIt; ++argIt) {
+			*(it++) = *argIt;
+		}
+		*(it++) = ' ';
+		++x;
+	}
+
+	if (x == i+1) {
+		// No notation has been read
+		return false;
+	}
+
+	*(--it) = 0;
+	i = x;
+	return chess.loadFEN(notation);
+}
+
+bool loadArgumentPGN(int argc, char** argv, int& i, ChessGame& chess) {
+	char fileName[100];
+	char* it = fileName;
+	int x = i+1;
+
+	*it = 0;
+	while (x < argc && readArgumentName(argv[x]) == 0) {
+		for (char* argIt = argv[x]; *argIt; ++argIt) {
+			*(it++) = *argIt;
+		}
+		*(it++) = ' ';
+		++x;
+	}
+
+	if (x == i+1) {
+		// No file name has been read
+		return false;
+	}
+
+	*(--it) = 0;
+	i = x;
+	return loadPGNFromFile(fileName, chess);
+}
+
+bool loadArgumentTag(int argc, char** argv, int& i, char*& argIt, ChessGame& chess) {
+	Tag tag;
+
+	char* it = tag.name;
+	while (i < argc && readArgumentName(argv[i]) == 0) {
+		while (*argIt && *argIt != ':') {
+			*(it++) = *(argIt++);
+		}
+
+		if (it != tag.name) {
+			*(it++) = ' ';
+		}
+
+		if (*argIt == ':') {
+			++argIt;
+			break;
+		}
+
+		++i;
+		argIt = argv[i];
+	}
+
+	if (it == tag.name) {
+		return false;
+	}
+	*(--it) = 0;
+
+	it = tag.value;
+	while (i < argc && readArgumentName(argv[i]) == 0) {
+		while (*argIt && *argIt != ',') {
+			*(it++) = *(argIt++);
+		}
+
+		if (it != tag.value) {
+			*(it++) = ' ';
+		}
+
+		if (*argIt == ',') {
+			++argIt;
+			break;
+		}
+
+		++i;
+		argIt = argv[i];
+	}
+
+	if (it == tag.name) {
+		return false;
+	}
+
+	*(--it) = 0;
+
+	chess.updateTag(tag);
+
+	return true;
+}
+
+bool loadArgumentTags(int argc, char** argv, int& i, ChessGame& chess) {
+	int x = i+1;
+	char* argIt = argv[x];
+	while (x < argc && readArgumentName(argv[x]) == 0) {
+		if (!loadArgumentTag(argc, argv, x, argIt, chess)) {
+			return false;
+		}
+	}
+
+	if (x == i+1) {
+		// No file name has been read
+		return false;
+	}
+
+	i = x;
+	return true;
+}
+
+
+bool handleArguments(int argc, char** argv, ChessGame& chess) {
+	bool posSelected = false;	
+
+	// Skips first argument, which is program name
+	int i = 1;
+
+	while (i < argc) {
+		if (readArgumentName(argv[i]) == DEFAULT_POS) {
+			if (posSelected) {
+				std::cerr << "Can't select multiple initial positions" << std::endl;
+				return false;
+			}
+			// TODO: Change changePosition to updatePosition()
+			chess.changePosition();
+			posSelected = true;
+		} else if (readArgumentName(argv[i]) == CUSTOM_FEN) {
+			if (posSelected) {
+				std::cerr << "Can't select multiple initial positions" << std::endl;
+				return false;
+			}
+			if (!loadArgumentFEN(argc, argv, i, chess)) {
+				std::cerr << "Failed to load FEN" << std::endl;
+				return false;
+			}
+			posSelected = true;
+		} else if (readArgumentName(argv[i]) == PGN_FILE) {
+			if (posSelected) {
+				std::cerr << "Can't select multiple initial positions" << std::endl;
+				return false;
+			}
+			if (!loadArgumentPGN(argc, argv, i, chess)) {
+				std::cerr << "Failed to load FEN" << std::endl;
+				return false;
+			}
+			posSelected = true;
+		} else if (readArgumentName(argv[i]) == DESCRIBE_GAME) {
+			if (!loadArgumentTags(argc, argv, i, chess)) {
+				std::cerr << "Failed to load tags" << std::endl;
+				return false;
+			}
+		} else {
+			std::cerr << "Unknown argument: " << argv[i] << std::endl;
+			return false;
+		}
+	}
+	return true;
+}
+
+void playChess(ChessGame& chess) {
+	char notation[20];
+	displayBoard(chess.getBoard());
+
+	while (!chess.isGameOver()) {
+		std::cout << playerToString(chess.getPlayer()) << " to move: ";
+		std::cin >> notation;
+		if (!chess.makeMove(notation)) {
+			std::cerr << "Invalid move, please try again" << std::endl;
+		} else {
+			displayBoard(chess.getBoard());
+		}
+	}
+
+	std::cout << "Game ended with " << stateToString(chess.getState())
+	   	      << " by " << playerToString(stateToPlayer(chess.getPlayer())) << std::endl;
+}
+
+int main(int argc, char **argv) {
+	bool hasArgs = argc > 1;
+
+	if (!hasArgs) {
+		std::cout << "Welcome to Chess!" << std::endl;
+	}
+
 	while (true) {
 		ChessGame chess;
 
-		promptInitialPosition(chess);
+		if (!hasArgs) {
+			promptInitialPosition(chess);
+		} else if (!handleArguments(argc, argv, chess)) {
+			return 1;
+		} 
 
 		if (!chess.validate()) {
-			std::cerr << "Invalid position" << std::endl;
+			std::cerr << "Failed to validate position" << std::endl;
 		}
 
-		char notation[20];
-		displayBoard(chess.getBoard());
+		playChess(chess);
 
-		while (!chess.isGameOver()) {
-			std::cout << playerToString(chess.getPlayer()) << " to move: ";
-			std::cin >> notation;
-			if (!chess.makeMove(notation)) {
-				std::cerr << "Invalid move, please try again" << std::endl;
-			} else {
-				displayBoard(chess.getBoard());
-			}
+		if (hasArgs) {
+			//return 0;
 		}
-
-		std::cout << "Game ended with " << stateToString(chess.getState())
-	   	       	  << " by " << playerToString(stateToPlayer(chess.getPlayer())) << std::endl;
 
 		bool quitGame = false;
 		bool repeatMenu = false;

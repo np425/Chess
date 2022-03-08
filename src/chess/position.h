@@ -39,7 +39,6 @@ protected:
 	bool isCheckmate(const Player pl) const;
 	void updateChecks(const Player pl);
 
-	/* Moves */
 	bool findValidMove(MoveInfo& move, const Player by) const; // Also updates MoveInfo
 	bool isPathToMoveClear(const Coord& from, const Coord& moveFrom, const Coord& moveTo) const;
 	bool isValidPawnMove(const Coord& from, const Coord& to) const;
@@ -72,11 +71,11 @@ public:
 	Position(Board={}, PositionInfo={});
 	Position(const char*);
 
-	void changePositionInfo(const PositionInfo&);
+	void changePositionInfo(PositionInfo);
 	bool loadFEN(const char*);
 
 	/* Board */
-	void changeBoard(Board newBoard);
+	void changePosition(Board={}, PositionInfo={});
 	bool isPathClear(const Coord&, const Coord&) const;
 
 	/* Validation */

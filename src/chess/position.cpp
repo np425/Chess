@@ -31,7 +31,6 @@ Position::Position(Board newBoard, PositionInfo info) : board(newBoard) {
 	changePositionInfo(info);
 }
 
-
 Position::Position(const char* notation) {
 	loadFEN(notation);
 }
@@ -44,17 +43,17 @@ bool Position::loadFEN(const char* notation) {
 		return false;
 	}
 
-	changeBoard(newBoard);
-	changePositionInfo(newPosInfo);
+	changePosition(newBoard, newPosInfo);
 	
 	return true;
 }
 
-void Position::changeBoard(Board newBoard) {
+void Position::changePosition(Board newBoard, PositionInfo info) {
 	board = newBoard;
+	changePositionInfo(info);
 }
 
-void Position::changePositionInfo(const PositionInfo& info) {
+void Position::changePositionInfo(PositionInfo info) {
 	toMove = info.toMove;
 	castlePerms[0] = info.castlePerms[0];
 	castlePerms[1] = info.castlePerms[1];
