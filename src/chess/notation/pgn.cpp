@@ -3,6 +3,7 @@
 #include "move_notation.h" // readMoveNotation
 #include <cctype> // isspace
 
+
 namespace chess {
 
 bool tagExists(const Tag& tag, const TagsArray& tags) {
@@ -180,6 +181,7 @@ bool readMoves(const char*& it, MovesArray& moves, unsigned &lastMoveNum) {
 
 		// Every full move, check for optional move number
 		if (count % 2 == 0 && readMoveNum(it, fullMoveNum)) {
+			while (isspace(*it)) ++it; 
 			if (lastMoveNum != (fullMoveNum-1)*2) {
 				return false; // Move numbers must be increasing by one
 			}

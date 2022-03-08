@@ -230,11 +230,14 @@ bool savePGNToFile(const char* fileName, const ChessGame& chess) {
 		return false;
 	}
 
-	for (const Tag* it = chess.getTags().it(); it < chess.getTags().end(); ++it) {
+	const TagsArray& tags = chess.getTags();
+	for (const Tag* it = tags.it(); it < tags.end(); ++it) {
 		f << "[" << it->name << " \"" << it->value << "\"]" << std::endl;
 	}
 
-	f << std::endl;
+	if (!tags.isEmpty()) {
+		f << std::endl;
+	}
 
 	unsigned moveNum = 0;
 	const MovesArray& moves = chess.getPreviousMoves();
@@ -315,8 +318,8 @@ bool loadArgumentFEN(int argc, char** argv, int& i, ChessGame& chess) {
 
 bool loadArgFileName(int argc, char** argv, int& i, char* fileName) {
 	char* it = fileName;
-	int x = i+1;
 
+	int x = i;
 	while (x < argc && readArgumentName(argv[x]) == ARG_NONE) {
 		for (char* argIt = argv[x]; *argIt; ++argIt) {
 			*(it++) = *argIt;
@@ -325,7 +328,7 @@ bool loadArgFileName(int argc, char** argv, int& i, char* fileName) {
 		++x;
 	}
 
-	if (x == i+1) {
+	if (x == i) {
 		// No file name has been read
 		return false;
 	}
@@ -337,7 +340,12 @@ bool loadArgFileName(int argc, char** argv, int& i, char* fileName) {
 
 bool loadArgumentPGN(int argc, char** argv, int& i, ChessGame& chess) {
 	char fileName[100];
-	return loadArgFileName(argc, argv, i, fileName) && loadPGNFromFile(fileName, chess);
+	++i;
+	if (!loadArgFileName(argc, argv, i, fileName)) {
+		return false;
+	}
+	
+	return loadPGNFromFile(fileName, chess);
 }
 
 bool loadArgumentTag(int argc, char** argv, int& i, char*& argIt, ChessGame& chess) {
@@ -416,6 +424,7 @@ bool loadArgumentTags(int argc, char** argv, int& i, ChessGame& chess) {
 }
 
 bool loadArgumentSave(int argc, char** argv, int& i) {
+	++i;
 	if (!loadArgFileName(argc, argv, i, saveFileName)) {
 		return false;
 	}
@@ -456,7 +465,7 @@ bool handleArguments(int argc, char** argv, ChessGame& chess) {
 				return false;
 			}
 			if (!loadArgumentPGN(argc, argv, i, chess)) {
-				std::cerr << "Failed to load FEN" << std::endl;
+				std::cerr << "Failed to load PGN" << std::endl;
 				return false;
 			}
 			posSelected = true;

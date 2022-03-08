@@ -4,6 +4,12 @@
 
 namespace chess {
 
+// TODO: Rename ExprType to ExprEval
+
+enum class ExprType {
+	NONE, MALFORMED, VALID
+};
+
 bool readPromoteType(const char*& it, PieceType& promote) {
 	// Letter case here does not matter, because there's no ambiguity
 	switch (toupper(*it)) {
@@ -45,19 +51,29 @@ bool readFinalChecks(const char*& it, MoveInfo& move) {
 	return true;
 }
 
-bool readOptComment(const char*& it) {
+ExprType readComment(const char*& it) {
 	if (*it == ';') {
 		// Comment to the end of line
 		++it;
-		while (*it != '\n' && *it) ++it;
+		while (*it != '\n' && *it) {
+			++it;
+		}
 	} else if (*it == '{') {
 		// Comment to the next }, wraps
-		while (*it != '}' && *it) ++it;
-		if (!*it) return false; // Missing ending }
+		while (*it != '}' && *it) {
+			++it;
+		}
+		if (!*it) {
+			// Missing ending }
+			return ExprType::MALFORMED; 
+		}
 		
 		++it; // Skip '}'
+	} else {
+		return ExprType::NONE;
 	}
-	return true;
+
+	return ExprType::VALID;
 }	
 
 bool readCapture(const char*& it, bool& capture) {
@@ -148,8 +164,18 @@ bool readMoveNotation(const char*& it, MoveInfo& move) {
 	readFinalChecks(it, move);
 
 	// Final comments		
-	while (isspace(*it)) ++it; // Skip whitespace before comment
-	return readOptComment(it);
+	const char* tempIt = it;
+
+	while (isspace(*tempIt)) ++tempIt; // Skip whitespace before comment
+	ExprType eval = readComment(tempIt);
+
+	if (eval == ExprType::MALFORMED) {
+		return false;
+	} else if (eval == ExprType::VALID) {
+		it = tempIt;
+	}
+
+	return true;
 }	
 
 }

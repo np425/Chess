@@ -27,11 +27,15 @@ ChessGame::ChessGame(Board newBoard, PositionInfo posInfo, TagsArray newTags, Mo
 }
 
 bool ChessGame::loadPGN(const char* pgn) {
-	if (!readPGN(pgn, tags, moves, fullMoves, state)) {
+	TagsArray newTags;
+	if (!readPGN(pgn, newTags, moves, fullMoves, state)) {
 		return false;
 	}
 	if (!validate()) {
 		return false;
+	}
+	for (Tag* it = newTags.it(); it < newTags.end(); ++it) {
+		updateTag(*it);
 	}
 	return buildPosFromMoves();
 }
