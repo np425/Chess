@@ -19,6 +19,9 @@ using namespace chess;
 #define TAG_L_ARG "--TAGS"
 #define TAG_S_ARG "-T"
 
+#define SAVE_L_ARG "--SAVE"
+#define SAVE_S_ARG "-S"
+
 enum InitialMenuChoice {
 	DEFAULT_POS = 1, CUSTOM_FEN, PGN_FILE, DESCRIBE_GAME
 };
@@ -30,6 +33,13 @@ enum TagMenuChoice {
 enum EndMenuChoice {
 	SAVE_PGN = 1, PLAY_AGAIN, QUIT_GAME
 };
+
+enum CLIArg {
+	ARG_NONE = 0, ARG_DEF_POS = 1, ARG_FEN, ARG_PGN, ARG_TAG, ARG_SAVE
+};
+
+char saveFileName[MAX_FILE_NAME];
+bool saveToFileArg = false;
 
 EndMenuChoice handleEndMenu() {
 	int choice;
@@ -263,17 +273,20 @@ bool savePGNToFile(const char* fileName, const ChessGame& chess) {
 	return true;
 }
 
-InitialMenuChoice readArgumentName(char* str) {
+CLIArg readArgumentName(char* str) {
 	if (strcmp(str, FEN_L_ARG) == 0 || strcmp(str, FEN_S_ARG) == 0) {
-		return CUSTOM_FEN;
+		return ARG_FEN;
 	} else if (strcmp(str, PGN_L_ARG) == 0 || strcmp(str, PGN_S_ARG) == 0) {
-		return PGN_FILE;
+		return ARG_PGN;
 	} else if (strcmp(str, DEF_L_ARG) == 0 || strcmp(str, DEF_S_ARG) == 0) {
-		return DEFAULT_POS;
+		return ARG_DEF_POS;
 	} else if (strcmp(str, TAG_L_ARG) == 0 || strcmp(str, TAG_S_ARG) == 0) {
-		return DESCRIBE_GAME;
-	} 
-	return (InitialMenuChoice)0;
+		return ARG_TAG;
+	} else if (strcmp(str, SAVE_L_ARG) == 0 || strcmp(str, SAVE_S_ARG) == 0) {
+		return ARG_SAVE;
+	} else {
+		return ARG_NONE;
+	}
 }
 
 bool loadArgumentFEN(int argc, char** argv, int& i, ChessGame& chess) {
@@ -282,7 +295,7 @@ bool loadArgumentFEN(int argc, char** argv, int& i, ChessGame& chess) {
 	int x = i+1;
 
 	*it = 0;
-	while (x < argc && readArgumentName(argv[x]) == 0) {
+	while (x < argc && readArgumentName(argv[x]) == ARG_NONE) {
 		for (char* argIt = argv[x]; *argIt; ++argIt) {
 			*(it++) = *argIt;
 		}
@@ -300,13 +313,11 @@ bool loadArgumentFEN(int argc, char** argv, int& i, ChessGame& chess) {
 	return chess.loadFEN(notation);
 }
 
-bool loadArgumentPGN(int argc, char** argv, int& i, ChessGame& chess) {
-	char fileName[100];
+bool loadArgFileName(int argc, char** argv, int& i, char* fileName) {
 	char* it = fileName;
 	int x = i+1;
 
-	*it = 0;
-	while (x < argc && readArgumentName(argv[x]) == 0) {
+	while (x < argc && readArgumentName(argv[x]) == ARG_NONE) {
 		for (char* argIt = argv[x]; *argIt; ++argIt) {
 			*(it++) = *argIt;
 		}
@@ -321,14 +332,19 @@ bool loadArgumentPGN(int argc, char** argv, int& i, ChessGame& chess) {
 
 	*(--it) = 0;
 	i = x;
-	return loadPGNFromFile(fileName, chess);
+	return true;
+}
+
+bool loadArgumentPGN(int argc, char** argv, int& i, ChessGame& chess) {
+	char fileName[100];
+	return loadArgFileName(argc, argv, i, fileName) && loadPGNFromFile(fileName, chess);
 }
 
 bool loadArgumentTag(int argc, char** argv, int& i, char*& argIt, ChessGame& chess) {
 	Tag tag;
 
 	char* it = tag.name;
-	while (i < argc && readArgumentName(argv[i]) == 0) {
+	while (i < argc && readArgumentName(argv[i]) == ARG_NONE) {
 		while (*argIt && *argIt != ':') {
 			*(it++) = *(argIt++);
 		}
@@ -352,7 +368,7 @@ bool loadArgumentTag(int argc, char** argv, int& i, char*& argIt, ChessGame& che
 	*(--it) = 0;
 
 	it = tag.value;
-	while (i < argc && readArgumentName(argv[i]) == 0) {
+	while (i < argc && readArgumentName(argv[i]) == ARG_NONE) {
 		while (*argIt && *argIt != ',') {
 			*(it++) = *(argIt++);
 		}
@@ -384,7 +400,7 @@ bool loadArgumentTag(int argc, char** argv, int& i, char*& argIt, ChessGame& che
 bool loadArgumentTags(int argc, char** argv, int& i, ChessGame& chess) {
 	int x = i+1;
 	char* argIt = argv[x];
-	while (x < argc && readArgumentName(argv[x]) == 0) {
+	while (x < argc && readArgumentName(argv[x]) == ARG_NONE) {
 		if (!loadArgumentTag(argc, argv, x, argIt, chess)) {
 			return false;
 		}
@@ -399,6 +415,14 @@ bool loadArgumentTags(int argc, char** argv, int& i, ChessGame& chess) {
 	return true;
 }
 
+bool loadArgumentSave(int argc, char** argv, int& i) {
+	if (!loadArgFileName(argc, argv, i, saveFileName)) {
+		return false;
+	}
+
+	saveToFileArg = true;
+	return true;
+}
 
 bool handleArguments(int argc, char** argv, ChessGame& chess) {
 	bool posSelected = false;	
@@ -407,7 +431,8 @@ bool handleArguments(int argc, char** argv, ChessGame& chess) {
 	int i = 1;
 
 	while (i < argc) {
-		if (readArgumentName(argv[i]) == DEFAULT_POS) {
+		CLIArg argName = readArgumentName(argv[i]);
+		if (argName == ARG_DEF_POS) {
 			if (posSelected) {
 				std::cerr << "Can't select multiple initial positions" << std::endl;
 				return false;
@@ -415,7 +440,7 @@ bool handleArguments(int argc, char** argv, ChessGame& chess) {
 			// TODO: Change changePosition to updatePosition()
 			chess.changePosition();
 			posSelected = true;
-		} else if (readArgumentName(argv[i]) == CUSTOM_FEN) {
+		} else if (argName == ARG_FEN) {
 			if (posSelected) {
 				std::cerr << "Can't select multiple initial positions" << std::endl;
 				return false;
@@ -425,7 +450,7 @@ bool handleArguments(int argc, char** argv, ChessGame& chess) {
 				return false;
 			}
 			posSelected = true;
-		} else if (readArgumentName(argv[i]) == PGN_FILE) {
+		} else if (argName == ARG_PGN) {
 			if (posSelected) {
 				std::cerr << "Can't select multiple initial positions" << std::endl;
 				return false;
@@ -435,9 +460,18 @@ bool handleArguments(int argc, char** argv, ChessGame& chess) {
 				return false;
 			}
 			posSelected = true;
-		} else if (readArgumentName(argv[i]) == DESCRIBE_GAME) {
+		} else if (argName == ARG_TAG) {
 			if (!loadArgumentTags(argc, argv, i, chess)) {
 				std::cerr << "Failed to load tags" << std::endl;
+				return false;
+			}
+		} else if (argName == ARG_SAVE) {
+			if (saveToFileArg) {
+				std::cerr << "Only one file can be selected for saving" << std::endl;
+				return false;
+			}
+			if (!loadArgumentSave(argc, argv, i)) {
+				std::cerr << "Failed to read file name" << std::endl;
 				return false;
 			}
 		} else {
@@ -488,8 +522,12 @@ int main(int argc, char **argv) {
 
 		playChess(chess);
 
-		if (hasArgs) {
-			//return 0;
+		if (hasArgs && saveToFileArg) {
+			if (!savePGNToFile(saveFileName, chess)) {
+				std::cerr << "Failed to save PGN to the file, please try again!" << std::endl;
+				return 1;
+			}
+			return 0;
 		}
 
 		bool quitGame = false;
@@ -500,10 +538,9 @@ int main(int argc, char **argv) {
 
 			switch (handleEndMenu()) {
 				case SAVE_PGN: {
-					char fileName[MAX_FILE_NAME];
 					std::cout << "Enter file name: " << std::endl;
-					std::cin.getline(fileName, MAX_FILE_NAME);
-					if (!savePGNToFile(fileName, chess)) {
+					std::cin.getline(saveFileName, MAX_FILE_NAME);
+					if (!savePGNToFile(saveFileName, chess)) {
 						std::cerr << "Failed to save PGN to the file, please try again!" << std::endl;
 					}
 					repeatMenu = true;
