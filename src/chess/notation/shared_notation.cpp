@@ -1,7 +1,7 @@
 #include "shared_notation.h"
 #include <cctype> // tolower
 
-namespace chess {	
+namespace {
 // Unsigned power functions (no negative powers)
 unsigned u_pow(unsigned base, unsigned power) {
 	unsigned res = 1;
@@ -11,60 +11,108 @@ unsigned u_pow(unsigned base, unsigned power) {
 		res *= base;
 	}
 	return res;
+}	
+
 }
 
-bool charToPieceType(const char chr, PieceType& pieceType) { 
-	switch (chr) {
+namespace chess {	
+PieceType charToType(const char chr) { 
+	switch (toupper(chr)) {
 		case 'R':
-			pieceType = ROOK;
-			break;
+			return ROOK;
 		case 'N':
-			pieceType = KNIGHT;
-			break;
+			return KNIGHT;	
 		case 'B':
-			pieceType = BISHOP;
-			break;
+			return BISHOP;
 		case 'Q':
-			pieceType = QUEEN;
-			break;
+			return QUEEN;
 		case 'K':
-			pieceType = KING;
-			break;
+			return KING;
 		case 'P': // pe4 allowed
-			pieceType = PAWN;
-			break;
+			return PAWN;
 		default:
-			return false;
+			return NO_PIECE;
 	}
-	return true;
 }
 
-bool readX(const char*& it, int& x) {
+PieceType charToPromoteType(const char chr) {
+	switch (toupper(chr)) {
+		case 'R': 
+			return ROOK;
+		case 'B':
+			return BISHOP;
+		case 'N':
+			return KNIGHT;
+		case 'Q':
+			return QUEEN;
+		default:
+			return NO_PIECE;	
+	}
+
+}
+
+CastlingSide charToCastlingSide(const char chr) {
+	switch (toupper(chr)) {
+		case 'K':
+			return CASTLES_KSIDE;
+		case 'Q':
+			return CASTLES_QSIDE;
+		default:
+			return CASTLES_NONE;
+	}
+}
+
+ExprEval readStringInsensitive(const char*& it, const char* str) {
+	if (!*it) {
+		return ExprEval::None;
+	}
+
+	int i = 0;
+	while (str[i]) {
+		if (toupper(str[i]) != toupper(it[i])) {
+			return ExprEval::Malformed;
+		}
+		++i;
+	}
+
+	it += i;
+	return ExprEval::Valid;
+}
+
+ExprEval readX(const char*& it, int& x) {
 	unsigned char chr = tolower(*it);
-	if (chr < 'a' || chr > 'h') return false;
+	if (chr < 'a' || chr > 'h') {
+		return ExprEval::None;
+	}
 	x = chr - 'a';
 
 	++it;
-	return true;
+	return ExprEval::Valid;
 }
 
-bool readY(const char*& it, int& y) {
+ExprEval readY(const char*& it, int& y) {
 	unsigned char chr = tolower(*it);
-	if (chr < '1' || chr > '8') return false;
+	if (chr < '1' || chr > '8') {
+		return ExprEval::None;
+	}
 	y = chr - '1';
 
 	++it;
-	return true;
+	return ExprEval::Valid;
 }
 
-int readCoord(const char*& it, Coord& coord) {
-	int read = 0;
-	if (readX(it, coord.x)) ++read;
-	if (readY(it, coord.y)) ++read;
+unsigned readCoord(const char*& it, Coord& coord) {
+	unsigned read = 0;
+	if (readX(it, coord.x) == ExprEval::Valid) {
+		++read;
+	}
+	if (readY(it, coord.y) == ExprEval::Valid) {
+		++read;
+	}
 	return read;
 }
 
-bool readPositiveInteger(const char*& it, unsigned& num) {
+ExprEval readInteger(const char*& it, unsigned& num) {
 	unsigned l = 0;
 	num = 0;
 
@@ -72,7 +120,10 @@ bool readPositiveInteger(const char*& it, unsigned& num) {
 		++l;
 	}
 
-	if (!l) return false; // No number
+	if (!l) {
+		// No number
+		return ExprEval::None; 
+	}
 
 	while (l) { // Construct number
 		unsigned digit = *it - '0';
@@ -80,7 +131,7 @@ bool readPositiveInteger(const char*& it, unsigned& num) {
 		--l;
 		++it;
 	}
-	return true;
+	return ExprEval::Valid;
 }
 
 }

@@ -15,7 +15,7 @@
 namespace chess {
 
 enum PieceType {
-	VOID = 0, ROOK, KNIGHT, BISHOP, QUEEN, KING, PAWN
+	NO_PIECE=0, ROOK, KNIGHT, BISHOP, QUEEN, KING, PAWN
 };
 
 enum Player {
@@ -31,9 +31,9 @@ enum GameStateType {
 };
 
 enum CastlingSide {
-	QSIDE   = 0, 
-	KSIDE   = 1 << 0, 
-	CS_NONE = 1 << 1
+	CASTLES_NONE  = 0,
+	CASTLES_QSIDE = 1, 
+	CASTLES_KSIDE = 2,
 };
 
 /* + for White, - for Black, 0 for neutral */
@@ -49,6 +49,10 @@ struct Coord {
 struct Tag {
 	char name[TAG_LENGTH];
 	char value[TAG_LENGTH];
+};
+
+enum class CheckType {
+	None, Check, Checkmate
 };
 
 struct MoveInfo {
@@ -67,8 +71,7 @@ struct MoveInfo {
 	// If piece is capturing a piece
 	bool capture;
 
-	bool check;
-	bool checkmate;
+	CheckType checks;
 	CastlingSide castles;
 };
 
@@ -84,7 +87,10 @@ typedef FixedArray<NotatedMove, MAX_MOVES> MovesArray;
 struct PositionInfo {
 	Player toMove = WHITE;
 	GameState state = PLAYING;
-	CastlingPerms castlePerms[2] = {KSIDE | QSIDE, KSIDE | QSIDE};
+	CastlingPerms castlePerms[2] = {
+		CASTLES_KSIDE | CASTLES_QSIDE, 
+		CASTLES_KSIDE | CASTLES_QSIDE
+	};
 	Coord passant = {-1,-1};
 	unsigned fullMoves = 0;
 	unsigned halfMoves = 0;

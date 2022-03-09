@@ -1,39 +1,48 @@
 #include "fen.h"
-#include "shared_notation.h" // readPositiveInteger, charToPieceType, readCoord
-#include <cctype> // isupper, tolower, isspace
+#include <cctype> 
 
 namespace chess {
 
-unsigned readFENSquare(const char*& it, Piece& piece) {
-	unsigned char chr = toupper(*it);
+ExprEval readFENSquare(const char*& it, Piece& piece, unsigned& count) {
+	piece = charToType(*it);
+	if (!piece) {
+		// Empty squares
+		if (*it < '1' || *it > '8') {
+			return ExprEval::None;
+		}
 
-	if (!charToPieceType(chr, (PieceType&)piece)) {
-		// If not a piece, then must be empty squares
-		if (chr < '1' || chr > '8') return 0;
-
-		piece = VOID;
 		++it;
-		return chr - '0';
+		count = *it - '0';
+		return ExprEval::Valid;
 	}
 	
 	// A piece
-	int sign = (isupper(*it) ? 1 : -1);
-
+	int sign = numToSign(piece);
 	piece *= sign;
+
 	++it;
-	return 1;
+
+	return ExprEval::Valid;
 }
 	
-bool readBoard(const char*& it, Board& board) {
+ExprEval readBoard(const char*& it, Board& board) {
+	bool readSquare = false;
+
 	// Board reading from white's perspective
 	for (int y = BOARD_SIZE_Y - 1; y >= 0; --y) {
 		for (int x = 0; x < BOARD_SIZE_X; ) {
 			Piece piece;
-			unsigned read = readFENSquare(it, piece);
+			unsigned read;
+			ExprEval exprEval = readFENSquare(it, piece, read);
 
-			if (!read || x + read > BOARD_SIZE_X) {
-				return false; // Unable to read a piece or too many pieces read
-			}
+			if (exprEval != ExprEval::Valid || x + read > BOARD_SIZE_X) {
+				// Unable to read a piece or too many pieces read
+				if (!readSquare && exprEval == ExprEval::None) {
+					return ExprEval::None;
+				} else {
+					return ExprEval::Malformed;
+				}	
+			} 
 
 			// Populate board with appropriate amount of pieces
 			while (read != 0) {
@@ -45,10 +54,10 @@ bool readBoard(const char*& it, Board& board) {
 		// Skip whitespaces and slashes (slashes are optional)
 		while (isspace(*it) || *it == '/') ++it;
 	}		
-	return true;
+	return ExprEval::Valid;
 }
 
-bool readPlayer(const char*& it, Player& player) {
+ExprEval readPlayer(const char*& it, Player& player) {
 	switch (tolower(*it)) {
 		case 'w':
 			player = WHITE;
@@ -57,42 +66,32 @@ bool readPlayer(const char*& it, Player& player) {
 			player = BLACK;
 			break;
 		default:
-			return false;
+			return ExprEval::None;
 	}
 
 	++it;
-	return true;
+	return ExprEval::Valid;
 }
 
-bool readCastlingRights(const char*& it, CastlingPerms castlePerms[2]) {
+ExprEval readCastlingRights(const char*& it, CastlingPerms castlePerms[2]) {
 	// Invalidate castling
-	castlePerms[0] = CS_NONE;
-	castlePerms[1] = CS_NONE;
+	castlePerms[0] = CASTLES_NONE;
+	castlePerms[1] = CASTLES_NONE;
 
-	if (*it == '-') { // No castling 
+	if (*it == '-') { 
+		// No castling 
 		++it;
-		return true; 
+		return ExprEval::Valid; 
 	}
 
 	bool foundOne = false;
 	while (true) {
 		Player player = (isupper(*it) ? WHITE : BLACK);
-		unsigned char chr = tolower(*it);
 
-		CastlingSide side;
+		CastlingSide side = charToCastlingSide(*it);
 
-		switch (chr) {
-			case 'k':
-				side = KSIDE;
-				foundOne = true;
-				break;
-			case 'q':
-				side = QSIDE;
-				foundOne = true;
-				break;
-			default:
-				// Make sure there is at least one castling right if no - is given
-				return foundOne;
+		if (side == CASTLES_NONE) {
+			return (foundOne ? ExprEval::Valid : ExprEval::Malformed);
 		}
 
 		// Allows repetitive castling rights
@@ -101,68 +100,83 @@ bool readCastlingRights(const char*& it, CastlingPerms castlePerms[2]) {
 	}	
 }
 
-bool readPassant(const char*& it, Coord& sqr) {
+ExprEval readPassant(const char*& it, Coord& sqr) {
+	// Invalidate passant
 	sqr = {-1, -1};
 
 	if (*it == '-') { // No passant
 		++it;
-		return true;
+		return ExprEval::Valid;
 	}
 
-	return readX(it, sqr.x) && readY(it, sqr.y);
+	if (readX(it, sqr.x) != ExprEval::Valid) {
+		return ExprEval::Malformed;
+	}
+
+	if (readY(it, sqr.y) != ExprEval::Valid) {
+		return ExprEval::Malformed;
+	}
+
+	return ExprEval::Valid;
 }
 
-bool readFEN(const char*& it, Board& board, PositionInfo& pos) {
+ExprEval readFEN(const char*& it, Board& board, PositionInfo& pos) {
 	while (isspace(*it)) {
 		++it; 
 	}
 
 	// 1. Board
-	if (!readBoard(it, board)) {
-		return false;
+	ExprEval exprEval = readBoard(it, board);
+	if (exprEval != ExprEval::Valid) {
+		return exprEval;
 	}
 	while (isspace(*it)) {
 		++it;
 	}
 
 	// 2. Player to move
-	if (!readPlayer(it, pos.toMove)) {
-		return false;
+	exprEval = readPlayer(it, pos.toMove);
+	if (exprEval != ExprEval::Valid) {
+		return ExprEval::Malformed;
 	}
 	while (isspace(*it)) {
 		++it;
 	}
 				
 	// 3. Castling rights
-	if (!readCastlingRights(it, pos.castlePerms)) {
-		return false;
+	exprEval = readCastlingRights(it, pos.castlePerms);
+	if (exprEval != ExprEval::Valid) {
+		return ExprEval::Malformed;
 	}
 	while (isspace(*it)) {
 		++it;
 	}
 
 	// 4. Passant
-	if (!readPassant(it, pos.passant)) {
-		return false;
+	exprEval = readPassant(it, pos.passant);
+	if (exprEval != ExprEval::Valid) {
+		return ExprEval::Malformed;
 	}
 	while (isspace(*it)) {
 		++it;
 	}
 			
 	// 5. Half moves
-	if (!readPositiveInteger(it, pos.halfMoves)) {
-		return false;
+	exprEval = readInteger(it, pos.halfMoves);
+	if (exprEval != ExprEval::Valid) {
+		return ExprEval::Malformed;
 	}
 	while (isspace(*it)) {
 		++it;
 	}
 
 	// 6. Full moves
-	if (!readPositiveInteger(it, pos.fullMoves)) {
-		return false;
+	exprEval = readInteger(it, pos.fullMoves);
+	if (exprEval != ExprEval::Valid) {
+		return ExprEval::Malformed;
 	}
 
-	return true;
+	return ExprEval::Valid;
 }
 
 }

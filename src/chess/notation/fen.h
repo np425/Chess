@@ -1,10 +1,3 @@
-#ifndef CHESS_FEN_H
-#define CHESS_FEN_H
-
-#include "../board.h"
-
-#define FEN_MAX_LENGTH 100
-
 /*
 
 https://en.wikipedia.org/wiki/Forsyth%E2%80%93Edwards_Notation
@@ -15,20 +8,28 @@ Simplified FEN notation:
 
 */
 
+#ifndef CHESS_FEN_H
+#define CHESS_FEN_H
+
+#include "../board.h"
+#include "shared_notation.h"
+
+#define FEN_MAX_LENGTH 100
+
 namespace chess {
 
 // Reads a FEN square, one character could be denoted as a piece, or as many squares
 // Returns: the amount of squares read
-unsigned readFENSquare(const char*& it, Piece& piece);
+ExprEval readFENSquare(const char*& it, Piece& piece, unsigned& read);
 
-bool readBoard(const char*& it, Piece* board);
+ExprEval readBoard(const char*& it, Piece* board);
 
-bool readPlayer(const char*& it, Player& player);
+ExprEval readPlayer(const char*& it, Player& player);
 
-bool readCastlingRights(const char*& it, CastlingSide canCastle[2]);
+ExprEval readCastlingRights(const char*& it, CastlingSide canCastle[2]);
 
 // Reads coordinates for a pawn that can be taken en passant
-bool readPassant(const char*& it, Coord& sqr);
+ExprEval readPassant(const char*& it, Coord& sqr);
 
 // Reads FEN:
 // 1. Board
@@ -37,7 +38,7 @@ bool readPassant(const char*& it, Coord& sqr);
 // 4. Pawn that can be taken en passant
 // 5. Number of half moves before last capture or pawn advance
 // 6. Number of full moves
-bool readFEN(const char*& it, Board& board, PositionInfo& info);
+ExprEval readFEN(const char*& it, Board& board, PositionInfo& info);
 
 }
 #endif

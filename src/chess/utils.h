@@ -42,7 +42,7 @@ inline Player stateToPlayer(const GameState state) {
 }
 
 // Gets the sign of a number, returns 0 if number is 0
-inline int numSign(const int num) {
+inline int numToSign(const int num) {
 	if (num > 0) return 1;
 	else if (num < 0) return -1;
 	else return 0;

@@ -1,57 +1,48 @@
 #include "move_notation.h"
-#include "shared_notation.h" // readX, readY, charToPieceType, readCoord
-#include <cctype> // tolower, isspace
+#include <cctype> 
 
 namespace chess {
 
-// TODO: Rename ExprType to ExprEval
-
-enum class ExprType {
-	NONE, MALFORMED, VALID
-};
-
-bool readPromoteType(const char*& it, PieceType& promote) {
+ExprEval readPromoteType(const char*& it, PieceType& promote) {
 	// Letter case here does not matter, because there's no ambiguity
-	switch (toupper(*it)) {
-		case 'R':
-			promote = ROOK;
-			break;
-		case 'B':
-			promote = BISHOP;
-			break;
-		case 'N':
-			promote = KNIGHT;
-			break;
-		case 'Q':
-			promote = QUEEN;
-			break;
-		default:
-			return false; // Wrong piece
+	promote = charToPromoteType(*it);
+	if (promote == NO_PIECE) {
+		return ExprEval::None;
 	}
 	++it;
-	return true;
+	return ExprEval::Valid;
 }
 
-bool readPromote(const char*& it) {
-	if (*it != '=') return false; // No promote
+ExprEval readPromote(const char*& it, PieceType& promote) {
+	promote = NO_PIECE;
+	if (*it != '=') {
+		// No promote
+		return ExprEval::None;
+	}
 	++it;
-	return true;
+	if (readPromoteType(it, promote) != ExprEval::Valid) {
+		return ExprEval::Malformed;
+	} 
+	return ExprEval::Valid;
 }
 	
-bool readFinalChecks(const char*& it, MoveInfo& move) {
+ExprEval readFinalChecks(const char*& it, CheckType& checks) {
 	// Invalidate checks
-	move.check = false;
-	move.checkmate = false;
+	checks = CheckType::None;
 
-	if (*it == '+') move.check = true;
-	else if (*it == '#') move.checkmate = true;
-	else return false;
+	if (*it == '+') {
+		checks = CheckType::Check;
+	} else if (*it == '#') {
+		checks = CheckType::Checkmate;
+	} else {
+		return ExprEval::None;
+	}
 
 	++it; // Skip checks
-	return true;
+	return ExprEval::Valid;
 }
 
-ExprType readComment(const char*& it) {
+ExprEval readComment(const char*& it) {
 	if (*it == ';') {
 		// Comment to the end of line
 		++it;
@@ -65,72 +56,84 @@ ExprType readComment(const char*& it) {
 		}
 		if (!*it) {
 			// Missing ending }
-			return ExprType::MALFORMED; 
+			return ExprEval::Malformed; 
 		}
 		
 		++it; // Skip '}'
 	} else {
-		return ExprType::NONE;
+		return ExprEval::None;
 	}
 
-	return ExprType::VALID;
+	return ExprEval::Valid;
 }	
 
-bool readCapture(const char*& it, bool& capture) {
-	if (*it != 'x') return false; // no capture
+ExprEval readCapture(const char*& it, bool& capture, Coord& sqr) {
+	if (*it != 'x') {
+		// No capture
+		return ExprEval::None; 
+	}
 	capture = true;
 
 	++it;
-	return true;
+
+	if (readX(it, sqr.x) != ExprEval::Valid || readY(it, sqr.y) != ExprEval::Valid) {
+		return ExprEval::Malformed;
+	}
+
+	return ExprEval::Valid;
 }
 
-bool readCastling(const char*& it, CastlingSide& side) {
+ExprEval readCastling(const char*& it, CastlingSide& side) {
 	// 0-0->(+,#); 0-0-0->(+,#)
+	if (readStringInsensitive(it, "O-O") != ExprEval::Valid) {
+		return ExprEval::None;
+	}
 
-	if (tolower(*it) != 'o') return false;
-
-	++it;
-	if (*it != '-') return false;
-	
-	++it;
-	if (tolower(*it) != 'o') return false;
-
-	++it;
 	if (*it != '-') {
 		// Found king-side castling
-		side = KSIDE;
-		return true; 
+		side = CASTLES_KSIDE;
+		return ExprEval::Valid; 
 	}
 
 	// Expect o: queen-side castle
 	++it;
-	if (tolower(*it) != 'o') return false;
+	if (toupper(*it) != 'o') {
+		return ExprEval::Malformed;
+	}
 
-	++it; // Skip o
+	// Skip o
+	++it; 
 
-	side = QSIDE;
-	return true;
+	side = CASTLES_QSIDE;
+	return ExprEval::Valid;
 }
 
-bool readPiecePlacement(const char*& it, MoveInfo& move) {
-	move.castles = CS_NONE;
+ExprEval readPiecePlacement(const char*& it, MoveInfo& move) {
+	move.castles = CASTLES_NONE;
 	move.capture = false;
 	
 	// Invalidate coordinates
 	move.from = {-1,-1};
 	move.to = {-1,-1};
 
-	bool marked = true; // For keeping track is piece type symbolic was given
+	// For keeping track if given piece symbolic
+	bool explicitPiece = true; 
 
 	// Piece names have to be in uppercase to avoid ambiguity with pawns
-	if (!charToPieceType(*it, move.type)) {
+	move.type = charToType(*it);
+
+	if (move.type == NO_PIECE) {
 		// If not a piece symbol then either a pawn move or castles
 		move.type = PAWN; 
-		marked = false;
-	} else ++it; // Skip piece character
-		
+		explicitPiece = false;
+	} else {
+		// Skip piece character
+		++it; 
+	}
+
+	unsigned read;
 	if (int read = readCoord(it, move.from)) {
-		if (readX(it, move.to.x)) {
+		if (readX(it, move.to.x) == ExprEval::Valid) {
 			return readY(it, move.to.y);
 		} else if (readCapture(it, move.capture)) {
 			return readX(it, move.to.x) && readY(it, move.to.y);
