@@ -57,3 +57,6 @@ Chess
 
 # PGN files
 *.pgn
+
+# Visual Studio
+.vs/
