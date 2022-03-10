@@ -30,7 +30,7 @@ public:
 	const Piece* getBoard() const;
 	Coord getKingPos(const Player) const;
 
-	void movePiece(const Piece, const Coord&);
+	void placePiece(const Piece, const Coord&);
 	void movePiece(const Coord&, const Coord&);
 	void clearPiece(const Coord&);
 

@@ -62,57 +62,75 @@ CastlingSide charToCastlingSide(const char chr) {
 	}
 }
 
-ExprEval readStringInsensitive(const char*& it, const char* str) {
+bool readChar(const char*& it, const char chr) {
+	if (*it != chr) {
+		return false;
+	}
+
+	++it;
+	return true;
+}
+
+bool readInsensitiveChar(const char*& it, const char chr) {
+	if (toupper(*it) != toupper(chr)) {
+		return false;
+	}
+
+	++it;
+	return true;
+}
+
+int readStringInsensitive(const char*& it, const char* str) {
 	if (!*it) {
-		return ExprEval::None;
+		return 0;
 	}
 
 	int i = 0;
 	while (str[i]) {
 		if (toupper(str[i]) != toupper(it[i])) {
-			return ExprEval::Malformed;
+			return -1;
 		}
 		++i;
 	}
 
 	it += i;
-	return ExprEval::Valid;
+	return i;
 }
 
-ExprEval readX(const char*& it, int& x) {
+int readX(const char*& it, int& x) {
 	unsigned char chr = tolower(*it);
 	if (chr < 'a' || chr > 'h') {
-		return ExprEval::None;
+		return 0;
 	}
 	x = chr - 'a';
 
 	++it;
-	return ExprEval::Valid;
+	return 1;
 }
 
-ExprEval readY(const char*& it, int& y) {
+int readY(const char*& it, int& y) {
 	unsigned char chr = tolower(*it);
 	if (chr < '1' || chr > '8') {
-		return ExprEval::None;
+		return 0;
 	}
 	y = chr - '1';
 
 	++it;
-	return ExprEval::Valid;
+	return 1;
 }
 
-unsigned readCoord(const char*& it, Coord& coord) {
+int readCoord(const char*& it, Coord& coord) {
 	unsigned read = 0;
-	if (readX(it, coord.x) == ExprEval::Valid) {
+	if (readX(it, coord.x) > 0) {
 		++read;
 	}
-	if (readY(it, coord.y) == ExprEval::Valid) {
+	if (readY(it, coord.y) > 0) {
 		++read;
 	}
 	return read;
 }
 
-ExprEval readInteger(const char*& it, unsigned& num) {
+int readPosInt(const char*& it, unsigned& num) {
 	unsigned l = 0;
 	num = 0;
 
@@ -122,16 +140,15 @@ ExprEval readInteger(const char*& it, unsigned& num) {
 
 	if (!l) {
 		// No number
-		return ExprEval::None; 
+		return 0; 
 	}
 
-	while (l) { // Construct number
+	for (int i = l; i; --i) { // Construct number
 		unsigned digit = *it - '0';
 		num += (u_pow(10, l-1) * digit);
-		--l;
 		++it;
 	}
-	return ExprEval::Valid;
+	return l;
 }
 
 }

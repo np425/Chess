@@ -24,7 +24,7 @@ void Board::changeBoard(const Piece* newBoard) {
 	}	
 }
 
-void Board::movePiece(Piece piece, const Coord& to) {
+void Board::placePiece(Piece piece, const Coord& to) {
 	clearPiece(to);
 
 	PieceType pt = pieceToType(piece);

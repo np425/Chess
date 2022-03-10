@@ -15,7 +15,7 @@
 namespace chess {
 
 enum PieceType {
-	NO_PIECE=0, ROOK, KNIGHT, BISHOP, QUEEN, KING, PAWN
+	VOID=0, ROOK, KNIGHT, BISHOP, QUEEN, KING, PAWN
 };
 
 enum Player {

@@ -8,8 +8,6 @@ Chess position definitions: variables and mechanics
 // TODO: Move counter
 
 #include "board.h"
-#include "notation/move_notation.h"
-#include "notation/fen.h"
 
 namespace chess {
 
@@ -66,13 +64,10 @@ public:
 	bool canMove(const Coord& from, const Coord& to) const;
 	bool canCastle(const CastlingSide side, const Player pl) const;
 	bool makeMove(MoveInfo& move); // Also updates MoveInfo
-	bool makeMove(const char* notation);
 
 	Position(Board={}, PositionInfo={});
-	Position(const char*);
 
 	void changePositionInfo(PositionInfo);
-	bool loadFEN(const char*);
 
 	/* Board */
 	void changePosition(Board={}, PositionInfo={});

@@ -1,114 +1,88 @@
 #include "move_notation.h"
+#include "char_types.h"
 #include <cctype> 
 
 namespace chess {
 
-ExprEval readPromoteType(const char*& it, PieceType& promote) {
+bool MoveParser::readPromoteType(PieceType& promote) {
 	// Letter case here does not matter, because there's no ambiguity
 	promote = charToPromoteType(*it);
-	if (promote == NO_PIECE) {
-		return ExprEval::None;
+	if (!promote) {
+		return false;
 	}
+
 	++it;
-	return ExprEval::Valid;
+	return true;
 }
 
-ExprEval readPromote(const char*& it, PieceType& promote) {
-	promote = NO_PIECE;
-	if (*it != '=') {
-		// No promote
-		return ExprEval::None;
+bool MoveParser::readPromoteSymbol() {
+	return readChar('=');
+}
+
+int MoveParser::readCoordPoints(Coord& coord) {
+	unsigned read = 0;
+	if (readX(coord.x)) {
+		++read;
 	}
-	++it;
-	if (readPromoteType(it, promote) != ExprEval::Valid) {
-		return ExprEval::Malformed;
-	} 
-	return ExprEval::Valid;
+	if (readY(coord.y)) {
+		++read;
+	}
+	return read;
 }
 	
-ExprEval readFinalChecks(const char*& it, CheckType& checks) {
-	// Invalidate checks
-	checks = CheckType::None;
-
-	if (*it == '+') {
+bool MoveParser::readChecks(CheckType& checks) {
+	if (readChar('+')) {
 		checks = CheckType::Check;
-	} else if (*it == '#') {
+	} else if (readChar('#')) {
 		checks = CheckType::Checkmate;
 	} else {
-		return ExprEval::None;
+		return false;
 	}
-
-	++it; // Skip checks
-	return ExprEval::Valid;
+	return true;
 }
 
-ExprEval readComment(const char*& it) {
-	if (*it == ';') {
+int MoveParser::readComment() {
+	if (readChar(';')) {
 		// Comment to the end of line
-		++it;
 		while (*it != '\n' && *it) {
 			++it;
 		}
-	} else if (*it == '{') {
+	} else if (readChar('{')) {
 		// Comment to the next }, wraps
 		while (*it != '}' && *it) {
 			++it;
 		}
-		if (!*it) {
+		if (!readChar('}')) {
 			// Missing ending }
-			return ExprEval::Malformed; 
+			return -1; 
 		}
-		
-		++it; // Skip '}'
 	} else {
-		return ExprEval::None;
+		return 0;
 	}
 
-	return ExprEval::Valid;
+	return 1;
 }	
 
-ExprEval readCapture(const char*& it, bool& capture, Coord& sqr) {
-	if (*it != 'x') {
-		// No capture
-		return ExprEval::None; 
-	}
-	capture = true;
-
-	++it;
-
-	if (readX(it, sqr.x) != ExprEval::Valid || readY(it, sqr.y) != ExprEval::Valid) {
-		return ExprEval::Malformed;
-	}
-
-	return ExprEval::Valid;
+bool MoveParser::readCaptureSymbol() {
+	return readChar('x');
 }
 
-ExprEval readCastling(const char*& it, CastlingSide& side) {
+bool MoveParser::readCastling(CastlingSide& side) {
 	// 0-0->(+,#); 0-0-0->(+,#)
-	if (readStringInsensitive(it, "O-O") != ExprEval::Valid) {
-		return ExprEval::None;
+	if (!readInsensitiveString("O-O")) {
+		return false;
 	}
 
-	if (*it != '-') {
-		// Found king-side castling
+	if (!readInsensitiveString("-O")) {
 		side = CASTLES_KSIDE;
-		return ExprEval::Valid; 
+		return false; 
 	}
-
-	// Expect o: queen-side castle
-	++it;
-	if (toupper(*it) != 'o') {
-		return ExprEval::Malformed;
-	}
-
-	// Skip o
-	++it; 
 
 	side = CASTLES_QSIDE;
-	return ExprEval::Valid;
+	return true;
 }
 
-ExprEval readPiecePlacement(const char*& it, MoveInfo& move) {
+bool MoveParser::readMove(MoveInfo& move) {
 	move.castles = CASTLES_NONE;
 	move.capture = false;
 	
@@ -122,8 +96,8 @@ ExprEval readPiecePlacement(const char*& it, MoveInfo& move) {
 	// Piece names have to be in uppercase to avoid ambiguity with pawns
 	move.type = charToType(*it);
 
-	if (move.type == NO_PIECE) {
-		// If not a piece symbol then either a pawn move or castles
+	if (!move.type) {
+		// If not a piece symbol then assume either a pawn move or castles
 		move.type = PAWN; 
 		explicitPiece = false;
 	} else {
@@ -131,54 +105,73 @@ ExprEval readPiecePlacement(const char*& it, MoveInfo& move) {
 		++it; 
 	}
 
-	unsigned read;
-	if (int read = readCoord(it, move.from)) {
-		if (readX(it, move.to.x) == ExprEval::Valid) {
-			return readY(it, move.to.y);
-		} else if (readCapture(it, move.capture)) {
-			return readX(it, move.to.x) && readY(it, move.to.y);
+	int read = readCoordPoints(move.from);
+	if (read > 0) {
+		if (readX(move.to.x)) {
+			return readY(move.to.y);
+		} else if (readCaptureSymbol()) {
+			move.capture = true;
+			return readX(move.to.x) && readY(move.to.y);
 		} else if (read == 2) {
-			move.to = {move.from.x, move.from.y};
+			move.to = move.from;
 			move.from = {-1,-1};
-		} else return false;
-	} else if (marked && readCapture(it, move.capture)) {
-		return readX(it, move.to.x) && readY(it, move.to.y);
-	} else if (!marked) {
-		// If not marked with piece type could be castling
-		return readCastling(it, move.castles);
-	} else return false;
+		} else {
+			// Malformed piece
+			return false;
+		}
+	} if (!explicitPiece) {
+		// If not marked with piece, then it has to be castling
+		return readCastling(move.castles);
+	} else {
+		// No piece
+		return false;
+	}
 
 	return true;
 }	
 
-bool readMoveNotation(const char*& it, MoveInfo& move) {
-	while (isspace(*it)) ++it; // Skip whitespace
-		
-	if (!readPiecePlacement(it, move)) {
-		return false; // Unknown piece or wrong placement
-	}
-		
-	move.promote = VOID;
-	if (readPromote(it) && (move.type != PAWN || !readPromoteType(it, move.promote))) {
-		// Malformed promotion symbolic, or non-pawn trying to promote
-		return false;
-	}
-		
-	readFinalChecks(it, move);
+bool MoveParser::parse() {
+	validExpr = false;
 
-	// Final comments		
+	while (isspace(*it)) {
+		++it;
+	}
+		
+	// 1. Move: piece or castling notation
+	if (!readMove(move)) {
+		return false; 
+	}
+	while (isspace(*it)) {
+		++it;
+	}
+		
+	// 2. Optional promotion for pawn
+	if (readPromoteSymbol()) {
+		return move.type == PAWN && readPromoteType(move.promote);
+	}
+	while (isspace(*it)) {
+		++it;
+	}
+		
+	// 3. Optional checks (check, checkmate notation)
+	readChecks(move.checks);
+
+	// 4. Optional comment
 	const char* tempIt = it;
+	while (isspace(*it)) {
+		++it;
+	}
 
-	while (isspace(*tempIt)) ++tempIt; // Skip whitespace before comment
-	ExprType eval = readComment(tempIt);
-
-	if (eval == ExprType::MALFORMED) {
-		return false;
-	} else if (eval == ExprType::VALID) {
+	int read = readComment();
+	if (read < 0) {
+		if (read == -1) {
+			return false;
+		}
 		it = tempIt;
 	}
 
-	return true;
+	validExpr = true;
+	return validExpr;
 }	
 
 }

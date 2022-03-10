@@ -3,7 +3,6 @@
 #include "move_notation.h" // readMoveNotation
 #include <cctype> // isspace
 
-
 namespace chess {
 
 bool tagExists(const Tag& tag, const TagsArray& tags) {
