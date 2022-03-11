@@ -11,7 +11,6 @@ Chess position definitions: variables and mechanics
 
 namespace chess {
 
-
 class Position {
 protected:
 	Board board;
@@ -25,7 +24,7 @@ protected:
 	unsigned fullMoves;
 
 	/* Meta Information to improve processing speed */
-	CoordArray checks; // Depends on current player
+	Coords checks; // Depends on current player
 
 	/* Validation */
 	bool validateChecks();
@@ -56,11 +55,11 @@ public:
 	Player getPlayer() const;
 	GameState getState() const;
 	const CastlingPerms& getCastlingPerms(const Player pl) const;
-	const CoordArray& getChecks() const;
+	const Coords& getChecks() const;
 	Coord getPassant() const;
 	bool isGameOver() const;
 
-	void getMoves(const Coord& coord, CoordArray& arr, const Player by) const;
+	void getMoves(const Coord& coord, Coords& arr, const Player by) const;
 	bool canMove(const Coord& from, const Coord& to) const;
 	bool canCastle(const CastlingSide side, const Player pl) const;
 	bool makeMove(MoveInfo& move); // Also updates MoveInfo
@@ -77,7 +76,7 @@ public:
 	bool validate();
 
 	/* Defenders */
-	void getDefenders(const Coord& coord, CoordArray& arr, const Player by) const;
+	void getDefenders(const Coord& coord, Coords& arr, const Player by) const;
 	bool defends(const Coord& from, const Coord& to) const;
 
 	/* Moves */

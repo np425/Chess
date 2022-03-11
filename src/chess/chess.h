@@ -7,23 +7,25 @@
 namespace chess {
 
 class ChessGame : public Position {
-	TagsArray tags;
-	MovesArray moves;
+	Tags tags;
+	Moves moves;
 
 	bool buildPosFromMoves();
-	Tag* findTag(const char*);
 public:
 	ChessGame(const char*);
-	ChessGame(Board={}, PositionInfo={}, TagsArray tags={}, MovesArray moves={});
+	ChessGame(Board={}, PositionInfo={}, Tags tags={}, Moves moves={});
 
-	const TagsArray& getTags() const;
-	const MovesArray& getPreviousMoves() const;
+	const Tags& getTags() const;
+	const Moves& getMoves() const;
 
 	bool loadPGN(const char*);
-	bool buildPosFromMoves(MovesArray& moves);
+	bool buildPosFromMoves(Moves& moves);
 
 	void updateTag(Tag tag);
 	bool makeMove(const char*);
+
+	void setTags(Tags tags);
+	void setMoves(Moves moves);
 };
 
 }

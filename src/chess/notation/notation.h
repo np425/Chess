@@ -17,7 +17,7 @@ protected:
 	bool readPlayer(Player& pl);
 	bool readInsensitiveChar(const char);
 	bool readChar(const char);
-	int readPositiveInt(unsigned&);
+	int readUnsignedInt(unsigned&);
 	int readInsensitiveString(const char*);
 	int readString(const char*);
 

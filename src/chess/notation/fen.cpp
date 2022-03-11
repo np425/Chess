@@ -143,7 +143,7 @@ bool FENParser::parse() {
 	}
 			
 	// 5. Half moves
-	if (!readPositiveInt(posInfo.halfMoves)) {
+	if (!readUnsignedInt(posInfo.halfMoves)) {
 		return false;
 	}
 	while (isspace(*it)) {
@@ -151,7 +151,7 @@ bool FENParser::parse() {
 	}
 
 	// 6. Full moves
-	if (!readPositiveInt(posInfo.fullMoves)) {
+	if (!readUnsignedInt(posInfo.fullMoves)) {
 		return false;
 	}
 

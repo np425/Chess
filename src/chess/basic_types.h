@@ -2,6 +2,9 @@
 #define CHESS_BASIC_TYPES_H
 
 #include "fixed_array.h"
+#include <map>
+#include <vector>
+#include <string>
 
 #define BOARD_SIZE_X 8
 #define BOARD_SIZE_Y 8
@@ -46,11 +49,6 @@ struct Coord {
 	int y;
 };
 
-struct Tag {
-	char name[TAG_LENGTH];
-	char value[TAG_LENGTH];
-};
-
 enum class CheckType {
 	None, Check, Checkmate
 };
@@ -80,9 +78,10 @@ struct NotatedMove {
 	char notation[20]; 
 };
 
-typedef FixedArray<Coord, MAX_ATTACKERS> CoordArray;
-typedef FixedArray<Tag, MAX_TAGS> TagsArray;
-typedef FixedArray<NotatedMove, MAX_MOVES> MovesArray;
+typedef std::pair<std::string, std::string> Tag;
+typedef std::map<std::string, std::string> Tags;
+typedef std::vector<Coord> Coords;
+typedef std::vector<NotatedMove> Moves;
 
 struct PositionInfo {
 	Player toMove = WHITE;

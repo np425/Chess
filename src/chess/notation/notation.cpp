@@ -92,7 +92,7 @@ bool BasicNotationParser::readInsensitiveChar(const char expected) {
 	return true;
 }
 
-int BasicNotationParser::readPositiveInt(unsigned& num) {
+int BasicNotationParser::readUnsignedInt(unsigned& num) {
 	unsigned l = 0;
 	num = 0;
 
