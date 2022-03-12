@@ -8,11 +8,11 @@ bool Position::findValidMove(MoveInfo& move, const Player by) const {
 		return false; 
 	}
 	
-	CoordArray moves;
+	Coords moves;
 	getMoves(move.to, moves, by);
 
 	Coord* chosen = nullptr;
-	for (Coord* it = moves.it(); it < moves.end(); ++it) {
+	for (auto it = moves.begin(); it < moves.end(); ++it) {
 		// Filter the right move
 
 		Piece piece = board[it->y * BOARD_SIZE_X + it->x];
@@ -32,7 +32,7 @@ bool Position::findValidMove(MoveInfo& move, const Player by) const {
 			// Ambiguous move
 			return false; 
 		}
-		chosen = it;
+		chosen = &(*it);
 	}
 
 	if (!chosen) {
@@ -46,9 +46,9 @@ bool Position::findValidMove(MoveInfo& move, const Player by) const {
 }
 
 bool Position::makeMove(MoveInfo& move, const Player pl) {
-	if (move.castles != CS_NONE) {
+	if (move.castles != CASTLES_NONE) {
 		// Castling
-		if (move.castles != QSIDE && move.castles != KSIDE) {
+		if (move.castles != CASTLES_QSIDE && move.castles != CASTLES_KSIDE) {
 			// Unknown castling side
 			return false; 
 		}
@@ -78,9 +78,9 @@ bool Position::makeMove(MoveInfo& move, const Player pl) {
 
 	// Updates move information
 	if (stateToType(state) == CHECKMATE) {
-		move.checkmate = true;
-	} else if (!checks.isEmpty()) {
-		move.check = true;
+		move.checks = CheckType::Checkmate;
+	} else if (!checks.empty()) {
+		move.checks = CheckType::Check;
 	}
 
 	// Update checks
@@ -89,12 +89,6 @@ bool Position::makeMove(MoveInfo& move, const Player pl) {
 
 bool Position::makeMove(MoveInfo& move) {
 	return makeMove(move, toMove);
-}
-
-bool Position::makeMove(const char* notation) {
-	MoveInfo move;
-	const char* it = notation;
-	return readMoveNotation(it, move) && makeMove(move);
 }
 
 }

@@ -3,45 +3,20 @@
 
 namespace chess {
 
-const TagsArray& ChessGame::getTags() const {
+const Tags& ChessGame::getTags() const {
 	return tags;
 }
 
-const MovesArray& ChessGame::getPreviousMoves() const {
+const Moves& ChessGame::getMoves() const {
 	return moves;
 }
 
-ChessGame::ChessGame(const char* pgn) {
-	loadPGN(pgn);
-}
-
-ChessGame::ChessGame(Board newBoard, PositionInfo posInfo, TagsArray newTags, MovesArray newMoves) 
-            : Position(newBoard, posInfo) {
-	for (Tag* it = newTags.it(); it < newTags.end(); ++it) {
-		tags.append(*it);
-	}
-
-	for (NotatedMove* it = newMoves.it(); it < newMoves.end(); ++it) {
-		moves.append(*it);
-	}
-}
-
-bool ChessGame::loadPGN(const char* pgn) {
-	TagsArray newTags;
-	if (!readPGN(pgn, newTags, moves, fullMoves, state)) {
-		return false;
-	}
-	if (!validate()) {
-		return false;
-	}
-	for (Tag* it = newTags.it(); it < newTags.end(); ++it) {
-		updateTag(*it);
-	}
-	return buildPosFromMoves();
+ChessGame::ChessGame(Board newBoard, PositionInfo posInfo, Tags tags, Moves moves) 
+            : Position(newBoard, posInfo), tags(tags), moves(moves) {
 }
 
 bool ChessGame::buildPosFromMoves() {
-	NotatedMove* move = moves.it();
+	Moves::iterator move = moves.begin();
 	while (move < moves.end() && !isGameOver()) {
 		if (!Position::makeMove(move->move)) {
 			// Invalid move
@@ -57,45 +32,17 @@ bool ChessGame::buildPosFromMoves() {
 	}
 }
 
-bool ChessGame::buildPosFromMoves(MovesArray& newMoves) {
+bool ChessGame::buildPosFromMoves(Moves& newMoves) {
 	moves = newMoves;
 	return buildPosFromMoves();
 }
 
-Tag* ChessGame::findTag(const char* tagName) {
-	Tag* it = tags.it();
-	while (it < tags.end()) {
-		if (strcmp(it->name, tagName) == 0) {
-			return it;
-		}
-		++it;
-	}
-	return it;
-}
-
 void ChessGame::updateTag(Tag tag) {
-	Tag* it = findTag(tag.name);
-	if (it != tags.end()) {
-		*it = tag;
+	if (tags.find(tag.first) == tags.end()) {
+		tags.insert(tag);
 	} else {
-		tags.append(tag);
+		tags[tag.first] = tag.second;
 	}
-}
-
-bool ChessGame::makeMove(const char* notation) {
-	NotatedMove move;
-	const char* it = notation;
-	if (!readMoveNotation(it, move.move) || !Position::makeMove(move.move)) {
-		return false;
-	}
-	const char* it2 = notation;
-	char* it3 = move.notation;
-	while (it2 < it) {
-		*(it3++) = *(it2++);
-	}
-	*it3 = 0;
-	moves.append(move);
-	return true;
 }
 
 }

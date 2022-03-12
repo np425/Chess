@@ -15,7 +15,7 @@ GameState Position::getState() const {
 	return state;
 }
 
-const CoordArray& Position::getChecks() const {
+const Coords& Position::getChecks() const {
 	return checks;
 }
 
@@ -29,23 +29,6 @@ Coord Position::getPassant() const {
 
 Position::Position(Board newBoard, PositionInfo info) : board(newBoard) {
 	changePositionInfo(info);
-}
-
-Position::Position(const char* notation) {
-	loadFEN(notation);
-}
-
-bool Position::loadFEN(const char* notation) {
-	const char* it = notation;
-	Board newBoard;
-	PositionInfo newPosInfo;
-	if (!readFEN(it, newBoard, newPosInfo)) {
-		return false;
-	}
-
-	changePosition(newBoard, newPosInfo);
-	
-	return true;
 }
 
 void Position::changePosition(Board newBoard, PositionInfo info) {

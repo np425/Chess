@@ -2,7 +2,6 @@
 #define CHESS_H
 
 #include "position.h"
-#include "notation/pgn.h"
 
 namespace chess {
 

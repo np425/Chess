@@ -6,8 +6,8 @@ bool Position::isPathClear(const Coord& from, const Coord& to) const {
 	int dx = to.x-from.x;
 	int dy = to.y-from.y;
 
-	int xSign = numSign(dx);
-	int ySign = numSign(dy);
+	int xSign = numToSign(dx);
+	int ySign = numToSign(dy);
 
 	int ix = from.x + xSign;
 	int iy = from.y + ySign;
@@ -32,7 +32,7 @@ bool Position::defends(const Coord& from, const Coord& to) const {
 	return canDefend(piece, from, to) && (type == KNIGHT || isPathClear(from, to));
 }
 
-void Position::getDefenders(const Coord& coord, CoordArray& defenders, const Player by) const {
+void Position::getDefenders(const Coord& coord, Coords& defenders, const Player by) const {
 	for (int y = 0; y < BOARD_SIZE_Y; ++y) {
 		for (int x = 0; x < BOARD_SIZE_X; ++x) {
 			Piece target = board[y * BOARD_SIZE_X + x];
@@ -40,14 +40,14 @@ void Position::getDefenders(const Coord& coord, CoordArray& defenders, const Pla
 			if (targetPl != by) continue;
 
 			if (defends({x,y}, coord)) {
-				defenders.append({x,y});
+				defenders.push_back({x,y});
 			}
 		}
 	}
 }
 
 void Position::updateChecks(const Player pl) {
-	checks.reset();
+	checks.clear();
 	getDefenders(board.getKingPos(pl), checks, (Player)!pl);
 }
 

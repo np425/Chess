@@ -5,7 +5,7 @@ namespace chess {
 // IDEA: Maybe rewrite Coord to a proper class?
 
 bool Position::isCheckmate(const Player pl) const {
-	CoordArray moves;
+	Coords moves;
 	unsigned checksAmount = checks.size();
 	Coord kPos = board.getKingPos(pl);
 
@@ -14,7 +14,7 @@ bool Position::isCheckmate(const Player pl) const {
 	if (checksAmount == 1) {
 		// 1. Attack the attacker (the one who checks)
 		getMoves(checks[0], moves, pl);
-		if (!moves.isEmpty()) return false;
+		if (!moves.empty()) return false;
 
 		// Coordinates for checks
 		int cy = checks[0].y;
@@ -24,8 +24,8 @@ bool Position::isCheckmate(const Player pl) const {
 		int diffY = cy - kPos.y;
 		int diffX = cx - kPos.x;
 
-		int signY = numSign(diffY);
-		int signX = numSign(diffX);
+		int signY = numToSign(diffY);
+		int signX = numToSign(diffX);
 
         int y = kPos.y + signY;
         int x = kPos.x + signX;
@@ -33,7 +33,7 @@ bool Position::isCheckmate(const Player pl) const {
 		// From king towards the check 
         for (int iy = y, ix = x; iy != cy && ix != cx; iy += signY, ix += signX) {	
 			getMoves({iy,ix}, moves, pl);
-			if (!moves.isEmpty()) return false;
+			if (!moves.empty()) return false;
 		}
 	}
     
@@ -58,14 +58,14 @@ bool Position::isCheckmate(const Player pl) const {
 }
 
 bool Position::isStalemate(const Player pl) const {
-	CoordArray moves;
+	Coords moves;
 
 	for (int y = 0; y < BOARD_SIZE_Y; ++y) {
 		for (int x = 0; x < BOARD_SIZE_X; ++x) {
 			if (pieceToPlayer(board[y*BOARD_SIZE_X+x]) == pl) continue;
 
 			getMoves({y,x}, moves, pl);
-			if (!moves.isEmpty()) return false;
+			if (!moves.empty()) return false;
 		}
 	}
 	return true;

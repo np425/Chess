@@ -11,17 +11,9 @@ Chess position definitions: variables and mechanics
 
 namespace chess {
 
-class Position {
+class Position : protected PositionInfo {
 protected:
 	Board board;
-
-	/* Positional variables */
-	Player toMove;
-	GameState state;
-	CastlingPerms castlePerms[2];
-	Coord passant;
-	unsigned halfMoves;
-	unsigned fullMoves;
 
 	/* Meta Information to improve processing speed */
 	Coords checks; // Depends on current player

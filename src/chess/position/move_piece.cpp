@@ -25,15 +25,15 @@ void Position::movePiece(const Coord& from, const Coord& to, const PieceType pro
 			break;
 		case KING: 
 			// Eliminate castling
-			castlePerms[toMove] = CS_NONE;
+			castlePerms[toMove] = CASTLES_NONE;
 			break;
 		case ROOK:
 			if (from.x == 0) {
 				// Left rook
-				castlePerms[toMove] &= ~QSIDE;
+				castlePerms[toMove] &= ~CASTLES_QSIDE;
 			} else if (from.x == BOARD_SIZE_X - 1) {
 				// Right rook
-				castlePerms[toMove] &= ~KSIDE;
+				castlePerms[toMove] &= ~CASTLES_KSIDE;
 			}
 			break;
 		default:
@@ -48,7 +48,7 @@ void Position::movePiece(const Coord& from, const Coord& to, const PieceType pro
 
 	// Move the piece
 	board.clearPiece(from);
-	board.movePiece(movePiece, to);
+	board.placePiece(movePiece, to);
 
 	nextTurn();
 }
@@ -65,7 +65,7 @@ void Position::castles(const CastlingSide side) {
 	board.movePiece({rx,ry}, {kPos.x + xSign, ry});
 
 	// Invalidate castling variables
-	castlePerms[toMove] = CS_NONE;
+	castlePerms[toMove] = CASTLES_NONE;
 
 	// Invalidate en passant opportunity
 	passant = {-1,-1};

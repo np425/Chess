@@ -6,8 +6,8 @@ bool Position::isPathToMoveClear(const Coord& from, const Coord& moveFrom, const
 	int dx = moveTo.x - from.x;
 	int dy = moveTo.y - from.y;
 
-	int xSign = numSign(dx);
-	int ySign = numSign(dy);
+	int xSign = numToSign(dx);
+	int ySign = numToSign(dy);
 
 	int ix = from.x + xSign;
 	int iy = from.y + ySign;
@@ -32,7 +32,7 @@ bool Position::canCastle(const CastlingSide side, const Player pl) const {
 		return false;
 	}
 
-	if (!checks.isEmpty()) {
+	if (!checks.empty()) {
 		// No castling under check
 		return false;
 	}
@@ -52,11 +52,11 @@ bool Position::canCastle(const CastlingSide side, const Player pl) const {
 
 	// Ensure two squares are not protected
 	for (int ix = 1; ix <= 2; ++ix) {
-		CoordArray defenders;
+		Coords defenders;
 		int x = kPos.x + ix * xSign;
 
 		getDefenders({x,ry}, defenders, (Player)!pl);
-		if (!defenders.isEmpty()) return false;
+		if (!defenders.empty()) return false;
 	}
 
 	return true;
@@ -122,8 +122,8 @@ bool Position::isMovePinned(const Coord& from, const Coord& to) const {
 		expectPassant = true;
 	}
 
-	int xSign = numSign(dx);
-	int ySign = numSign(dy);
+	int xSign = numToSign(dx);
+	int ySign = numToSign(dy);
 
 	bool foundPiece = false;
 
@@ -175,16 +175,16 @@ bool Position::doesMovePreventCheck(const Coord& from, const Coord& to) const {
 
 	if (!checksAmount) return true;
 
-	CoordArray defenders;
+	Coords defenders;
 
 	if (checksAmount == 1) {
 		if (checks[0].x == to.x && checks[0].y == to.y) {
 			// 1. Attack the piece
 			if (type == KING) {
 				// If taking with the king, make sure the piece is not defended
-				defenders.reset();
+				defenders.clear();
 				getDefenders(to, defenders, (Player)!pl);
-				return defenders.isEmpty();
+				return defenders.empty();
 			} else {
 				// If taking not with the king, it can take the piece
 				return true;
@@ -200,8 +200,8 @@ bool Position::doesMovePreventCheck(const Coord& from, const Coord& to) const {
 				checks[0].y-kPos.y,
 				checks[0].x-kPos.x
 			};
-			Coord signCT = {numSign(diffCT.x), numSign(diffCT.y)};
-			Coord signCK = {numSign(diffCK.y), numSign(diffCK.x)};
+			Coord signCT = {numToSign(diffCT.x), numToSign(diffCT.y)};
+			Coord signCK = {numToSign(diffCK.y), numToSign(diffCK.x)};
 
 			int factor = signCT.y * BOARD_SIZE_X + signCT.x;
 			int toCoord = to.y * BOARD_SIZE_X + to.x;
@@ -261,7 +261,7 @@ bool Position::canMove(const Coord& from, const Coord& to) const {
 	return doesMovePreventCheck(from, to);
 }
 
-void Position::getMoves(const Coord& coord, CoordArray& moves, const Player by) const {
+void Position::getMoves(const Coord& coord, Coords& moves, const Player by) const {
 	for (int y = 0; y < BOARD_SIZE_Y; ++y) {
 		for (int x = 0; x < BOARD_SIZE_X; ++x) {
 			Piece target = board[y * BOARD_SIZE_X + x];
@@ -269,7 +269,7 @@ void Position::getMoves(const Coord& coord, CoordArray& moves, const Player by) 
 			if (targetPl != by) continue;
 
 			if (canMove({x,y}, coord)) {
-				moves.append({x,y});
+				moves.push_back({x,y});
 			}
 		}
 	}
