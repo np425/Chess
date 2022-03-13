@@ -9,26 +9,25 @@
 namespace chess {
 
 class PGNParser : public BasicNotationParser {
-	ChessGame game;
+	ChessGame* game;
 
 	// Tags
-	bool readTag(Tag& tag);
-	bool readTags(Tags& tags);
+	bool readTag(Tag&);
+	bool readTags(Tags&);
 
 	// Moves
-	bool readMoveNum(unsigned& num);
-	bool readMove(NotatedMove& move);
-	bool readMoves(Moves& moves, unsigned& lastMoveNum);
+	bool readMoveNum(unsigned&);
+	bool readMove(NotatedMove&);
+	bool readMoves(Moves&, unsigned&);
 
 	// Result
-	bool readResult(GameState& state, const unsigned lastMoveNum);
+	bool readResult(GameState&, const unsigned);
 public:
-	PGNParser();
-	PGNParser(const char*);
+	PGNParser(ChessGame*, const char* = nullptr);
 
 	virtual bool parse() override;
 
-	ChessGame& getGame();
+	ChessGame* getGame() const;
 };
 
 }

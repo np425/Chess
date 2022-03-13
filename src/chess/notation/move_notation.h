@@ -9,7 +9,7 @@
 namespace chess {
 
 class MoveParser : public BasicNotationParser {
-	MoveInfo move;
+	MoveInfo* move;
 
 	int readCoordPoints(Coord&);
 	bool readPromoteType(PieceType&);	
@@ -21,11 +21,10 @@ class MoveParser : public BasicNotationParser {
 	bool readMove(MoveInfo&);
 
 public:
-	MoveParser();
-	MoveParser(const char*);
+	MoveParser(MoveInfo*, const char* = nullptr);
 	virtual bool parse() override;
 
-	MoveInfo& getMove();
+	MoveInfo* getMove() const;
 };
 
 }

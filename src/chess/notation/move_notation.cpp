@@ -4,6 +4,13 @@
 
 namespace chess {
 
+MoveParser::MoveParser(MoveInfo* move, const char* expr) : BasicNotationParser(expr), move(move) {
+}
+
+MoveInfo* MoveParser::getMove() const {
+	return move;
+}
+
 bool MoveParser::readPromoteType(PieceType& promote) {
 	// Letter case here does not matter, because there's no ambiguity
 	promote = charToPromoteType(*it);
@@ -138,7 +145,7 @@ bool MoveParser::parse() {
 	}
 		
 	// 1. Move: piece or castling notation
-	if (!readMove(move)) {
+	if (!readMove(*move)) {
 		return false; 
 	}
 	while (isspace(*it)) {
@@ -147,14 +154,14 @@ bool MoveParser::parse() {
 		
 	// 2. Optional promotion for pawn
 	if (readPromoteSymbol()) {
-		return move.type == PAWN && readPromoteType(move.promote);
+		return move->type == PAWN && readPromoteType(move->promote);
 	}
 	while (isspace(*it)) {
 		++it;
 	}
 		
 	// 3. Optional checks (check, checkmate notation)
-	readChecks(move.checks);
+	readChecks(move->checks);
 
 	// 4. Optional comment
 	const char* tempIt = it;

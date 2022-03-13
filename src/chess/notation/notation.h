@@ -7,9 +7,9 @@ namespace chess {
 
 class BasicNotationParser {
 protected:
-	const char* expr = nullptr;
-	const char* it = nullptr;
-	bool validExpr = false;
+	const char* expr;
+	const char* it;
+	bool validExpr;
 
 	// Basic reading functions
 	bool readX(int&);
@@ -20,7 +20,6 @@ protected:
 	int readUnsignedInt(unsigned&);
 	int readInsensitiveString(const char*);
 	int readString(const char*);
-
 
 public:
 	BasicNotationParser(const char* = nullptr);

@@ -18,7 +18,8 @@ unsigned u_pow(unsigned base, unsigned power) {
 
 namespace chess {
 
-BasicNotationParser::BasicNotationParser(const char* expr) : expr(expr), it(expr) { }
+BasicNotationParser::BasicNotationParser(const char* expr) : expr(expr), it(expr), validExpr(false) {
+}
 
 bool BasicNotationParser::parse(const char* expr) {
 	this->expr = expr;

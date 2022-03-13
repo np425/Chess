@@ -10,7 +10,7 @@ const unsigned FEN_MAX_LENGTH = 100;
 
 class FENParser : public BasicNotationParser {
 protected:
-	Position pos;
+	Position* pos;
 
 	int readSquare(Piece&);
 	bool readBoard(Board&);
@@ -18,11 +18,10 @@ protected:
 	bool readPassant(Coord&);
 
 public:
-	FENParser();
-	FENParser(const char*);
+	FENParser(Position*, const char* = nullptr);
 	virtual bool parse() override;
 
-	Position& getPos();
+	Position* getPos() const;
 };
 
 }

@@ -4,10 +4,11 @@
 
 namespace chess {
 
-PGNParser::PGNParser() : BasicNotationParser() {
+PGNParser::PGNParser(ChessGame* game, const char* expr) : BasicNotationParser(expr), game(game) {
 }
 
-PGNParser::PGNParser(const char* expr) : BasicNotationParser(expr) {
+ChessGame* PGNParser::getGame() const {
+	return game;
 }
 
 bool PGNParser::readTag(Tag& tag) {
@@ -126,14 +127,12 @@ bool PGNParser::readMoveNum(unsigned& num) {
 }
 
 bool PGNParser::readMove(NotatedMove& move) {
-	MoveParser moveParser(it);
+	MoveParser moveParser(&move.move, it);
 
 	// Comments inclusive
 	if (!moveParser.parse()) {
 		return false;
 	}
-
-	move.move = moveParser.getMove();
 
 	const char* itEnd = moveParser.end();
 
@@ -226,8 +225,8 @@ bool PGNParser::parse() {
 		it = tempIt;
 	}
 
-	game.setTags(tags);
-	game.setMoves(moves);
+	game->setTags(tags);
+	game->setMoves(moves);
 
 	return true;
 }

@@ -4,7 +4,11 @@
 
 namespace chess {
 
-Position& FENParser::getPos() {
+FENParser::FENParser(Position* pos, const char* expr) : BasicNotationParser(expr), pos(pos) {
+	
+}
+
+Position* FENParser::getPos() const {
 	return pos;
 }
 
@@ -155,7 +159,7 @@ bool FENParser::parse() {
 		return false;
 	}
 
-	pos.changePosition(board, posInfo);
+	pos->changePosition(board, posInfo);
 	validExpr = true;
 
 	return validExpr;
