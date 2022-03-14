@@ -20,12 +20,11 @@ int FENParser::readSquare(Piece& piece) {
 			return 0;
 		}
 
-		++it;
-		return *it - '0';
+		return *(it++) - '0';
 	}
 	
 	// A piece
-	int sign = numToSign(piece);
+	int sign = (isupper(*it) ? 1 : -1);
 	piece *= sign;
 
 	++it;
@@ -45,7 +44,7 @@ bool FENParser::readBoard(Board& board) {
 			} 
 
 			// Populate board with appropriate amount of pieces
-			while (read != 0) {
+			while (read > 0) {
 				board.placePiece(piece, {x,y});
 				++x;
 				--read;

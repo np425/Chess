@@ -36,7 +36,12 @@ void Position::changePosition(Board newBoard, PositionInfo info) {
 	changePositionInfo(info);
 }
 
-void Position::changePositionInfo(PositionInfo info) {
+void Position::changePosition(const Position& pos) {
+	board = pos.getBoard();
+	changePositionInfo(pos);
+}
+
+void Position::changePositionInfo(const PositionInfo& info) {
 	toMove = info.toMove;
 	castlePerms[0] = info.castlePerms[0];
 	castlePerms[1] = info.castlePerms[1];

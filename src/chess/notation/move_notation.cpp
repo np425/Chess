@@ -103,7 +103,7 @@ bool MoveParser::readMove(MoveInfo& move) {
 	// Piece names have to be in uppercase to avoid ambiguity with pawns
 	move.type = charToType(*it);
 
-	if (!move.type) {
+	if (islower(*it) || !move.type) {
 		// If not a piece symbol then assume either a pawn move or castles
 		move.type = PAWN; 
 		explicitPiece = false;
@@ -126,7 +126,10 @@ bool MoveParser::readMove(MoveInfo& move) {
 			// Malformed piece
 			return false;
 		}
-	} if (!explicitPiece) {
+	} else if (explicitPiece && readCaptureSymbol()) {
+		move.capture = true;
+		return readX(move.to.x) && readY(move.to.y);
+	} else if (!explicitPiece) {
 		// If not marked with piece, then it has to be castling
 		return readCastling(move.castles);
 	} else {
@@ -148,16 +151,14 @@ bool MoveParser::parse() {
 	if (!readMove(*move)) {
 		return false; 
 	}
-	while (isspace(*it)) {
-		++it;
-	}
 		
 	// 2. Optional promotion for pawn
 	if (readPromoteSymbol()) {
-		return move->type == PAWN && readPromoteType(move->promote);
-	}
-	while (isspace(*it)) {
-		++it;
+		if (move->type != PAWN || !readPromoteType(move->promote)) {
+			return false;
+		}
+	} else {
+		move->promote = VOID;
 	}
 		
 	// 3. Optional checks (check, checkmate notation)
@@ -170,7 +171,7 @@ bool MoveParser::parse() {
 	}
 
 	int read = readComment();
-	if (read < 0) {
+	if (read <= 0) {
 		if (read == -1) {
 			return false;
 		}

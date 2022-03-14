@@ -9,22 +9,22 @@ class ChessGame : public Position {
 	Tags tags;
 	Moves moves;
 
-	bool buildPosFromMoves();
 public:
 	ChessGame(const char*);
-	ChessGame(Board={}, PositionInfo={}, Tags tags={}, Moves moves={});
+	ChessGame(Board={}, PositionInfo={}, Tags={}, Moves={});
 
 	const Tags& getTags() const;
 	const Moves& getMoves() const;
 
 	bool loadPGN(const char*);
-	bool buildPosFromMoves(Moves& moves);
+	bool buildPos();
 
-	void updateTag(Tag tag);
-	bool makeMove(const char*);
+	void updateTag(Tag);
+	bool makeMove(NotatedMove);
 
-	void setTags(Tags tags);
-	void setMoves(Moves moves);
+	void setTags(Tags);
+	void addTags(Tags);
+	void setMoves(Moves);
 };
 
 }

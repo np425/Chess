@@ -58,10 +58,11 @@ public:
 
 	Position(Board={}, PositionInfo={});
 
-	void changePositionInfo(PositionInfo);
+	void changePositionInfo(const PositionInfo&);
 
 	/* Board */
 	void changePosition(Board={}, PositionInfo={});
+	void changePosition(const Position& pos);
 	bool isPathClear(const Coord&, const Coord&) const;
 
 	/* Validation */

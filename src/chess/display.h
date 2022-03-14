@@ -13,10 +13,10 @@ const char* playerToString(const Player player);
 
 void displayBoard(const Board& board);
 void displayPosInfo(const Position& pos);
-void displayPieces(const Board& board, const CoordArray& squares);
+void displayPieces(const Board& board, const Coords& squares);
 
 void displayMoveInfo(const MoveInfo& move);
-void displayTags(const TagsArray& tags);
+void displayTags(const Tags& tags);
 
 }
 

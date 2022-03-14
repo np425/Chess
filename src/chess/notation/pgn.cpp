@@ -127,6 +127,9 @@ bool PGNParser::readMoveNum(unsigned& num) {
 }
 
 bool PGNParser::readMove(NotatedMove& move) {
+	// Clear to not append to move notation read prior
+	move.notation.clear();
+
 	MoveParser moveParser(&move.move, it);
 
 	// Comments inclusive
@@ -137,12 +140,9 @@ bool PGNParser::readMove(NotatedMove& move) {
 	const char* itEnd = moveParser.end();
 
 	// Set notation in the moves array
-	char* notationIt = move.notation;
 	while (it != itEnd) {
-		*(notationIt++) = *(it++);
+		move.notation += *(it++);
 	}
-
-	*notationIt = 0; 
 
 	return true;
 }
@@ -183,9 +183,9 @@ bool PGNParser::readMoves(Moves& moves, unsigned &lastMoveNum) {
 		} else {
 			fullMoveNum = 0;
 		}
-	}
 
-	moves.push_back(move);
+		moves.push_back(move);
+	}
 
 	if (fullMoveNum) {
 		// Must be move after move number
@@ -225,7 +225,7 @@ bool PGNParser::parse() {
 		it = tempIt;
 	}
 
-	game->setTags(tags);
+	game->addTags(tags);
 	game->setMoves(moves);
 
 	return true;

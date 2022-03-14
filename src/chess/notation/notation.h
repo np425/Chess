@@ -25,7 +25,7 @@ public:
 	BasicNotationParser(const char* = nullptr);
 
 	virtual bool parse() = 0;
-	bool parse(const char*);
+	bool parseStr(const char*);
 
 	// Returns pointer to parsing end
 	const char* end() const;

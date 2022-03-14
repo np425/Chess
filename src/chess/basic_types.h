@@ -75,7 +75,7 @@ struct MoveInfo {
 
 struct NotatedMove {
 	MoveInfo move;
-	char notation[20]; 
+	std::string notation;
 };
 
 typedef std::pair<std::string, std::string> Tag;

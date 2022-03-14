@@ -38,7 +38,7 @@ void Board::placePiece(Piece piece, const Coord& to) {
 }
 
 void Board::movePiece(const Coord& from, const Coord& to) {
-	movePiece(board[from.y * BOARD_SIZE_X + from.x], to);
+	placePiece(board[from.y * BOARD_SIZE_X + from.x], to);
 	board[from.y * BOARD_SIZE_X + from.x] = VOID;
 }
 

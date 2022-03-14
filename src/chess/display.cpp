@@ -113,8 +113,8 @@ void displayBoard(const Board& board) {
 }
 
 
-void displayPieces(const Board& board, const CoordArray& squares) {
-	for (const Coord* it = squares.it(); it < squares.end(); ++it) {
+void displayPieces(const Board& board, const Coords& squares) {
+	for (auto it = squares.begin(); it != squares.end(); ++it) {
 		Piece piece = board[it->y * BOARD_SIZE_Y +it->x];
 		std::cout << "- " << pieceTypeToChar(pieceToType(piece))
 				  << "{" << it->x << "," << it->y << "}" << std::endl;
@@ -146,7 +146,7 @@ void displayPosInfo(const Position& pos) {
 			  << "{" << board.getKingPos(BLACK).x << "," 
 			  << board.getKingPos(BLACK).y << "}" << std::endl;
 
-	if (pos.getChecks().isEmpty()) {
+	if (pos.getChecks().empty()) {
 		std::cout << std::left << std::setw(17) << "Checks:" << "none" << std::endl;
 	} else {
 		std::cout << "Checks: " << std::endl;
@@ -170,20 +170,20 @@ void displayMoveInfo(const MoveInfo& move) {
 	          << (move.capture ? "true" : "false") << std::endl;
 	
 	std::cout << std::left << std::setw(17) << "Check: " 
-	          << (move.check ? "true" : "false") << std::endl;
+	          << (move.checks == CheckType::Check ? "true" : "false") << std::endl;
 	std::cout << std::left << std::setw(17) << "Checkmate: " 
-	          << (move.checkmate ? "true" : "false") << std::endl;
+	          << (move.checks == CheckType::Checkmate ? "true" : "false") << std::endl;
 
 	std::cout << "Castling permissions:" << std::endl;
 	std::cout << std::left << std::setw(17) << "- Queen-side: " 
-	          << (move.castles & QSIDE ? "true" : "false") << std::endl;
+	          << (move.castles & CASTLES_QSIDE ? "true" : "false") << std::endl;
 	std::cout << std::left << std::setw(17) << "- King-side: " 
-	          << (move.castles & KSIDE ? "true" : "false") << std::endl;
+	          << (move.castles & CASTLES_KSIDE ? "true" : "false") << std::endl;
 }
 
-void displayTags(const TagsArray& tags) {
-	for (const Tag* it = tags.it(); it < tags.end(); ++it) {
-		std::cout << it->name << ": " << it->value << std::endl;
+void displayTags(const Tags& tags) {
+	for (auto it = tags.begin(); it != tags.end(); ++it) {
+		std::cout << it->first << ": " << it->second << std::endl;
 	}
 }
 

@@ -21,7 +21,7 @@ namespace chess {
 BasicNotationParser::BasicNotationParser(const char* expr) : expr(expr), it(expr), validExpr(false) {
 }
 
-bool BasicNotationParser::parse(const char* expr) {
+bool BasicNotationParser::parseStr(const char* expr) {
 	this->expr = expr;
 	it = expr;
 	validExpr = parse();

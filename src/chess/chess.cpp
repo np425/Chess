@@ -15,7 +15,15 @@ ChessGame::ChessGame(Board newBoard, PositionInfo posInfo, Tags tags, Moves move
             : Position(newBoard, posInfo), tags(tags), moves(moves) {
 }
 
-bool ChessGame::buildPosFromMoves() {
+void ChessGame::setMoves(Moves newMoves) {
+	moves = newMoves;
+}
+
+//void ChessGame::setTags(Tags newTags) {
+//	tags = newTags;
+//}
+
+bool ChessGame::buildPos() {
 	Moves::iterator move = moves.begin();
 	while (move < moves.end() && !isGameOver()) {
 		if (!Position::makeMove(move->move)) {
@@ -32,17 +40,24 @@ bool ChessGame::buildPosFromMoves() {
 	}
 }
 
-bool ChessGame::buildPosFromMoves(Moves& newMoves) {
-	moves = newMoves;
-	return buildPosFromMoves();
-}
-
 void ChessGame::updateTag(Tag tag) {
 	if (tags.find(tag.first) == tags.end()) {
 		tags.insert(tag);
 	} else {
 		tags[tag.first] = tag.second;
 	}
+}
+
+void ChessGame::addTags(Tags newTags) {
+	tags.insert(newTags.begin(), newTags.end());
+}
+
+bool ChessGame::makeMove(NotatedMove move) {
+	if (!Position::makeMove(move.move)) {
+		return false;
+	}
+	moves.push_back(move);
+	return true;
 }
 
 }

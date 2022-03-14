@@ -4,8 +4,6 @@
 #include "notation.h"
 #include "../basic_types.h"
 
-#define MOVE_LENGTH 20
-
 namespace chess {
 
 class MoveParser : public BasicNotationParser {
