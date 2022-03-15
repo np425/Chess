@@ -2,7 +2,7 @@
 
 namespace chess {
 
-void Position::movePiece(const Coord& from, const Coord& to, const PieceType promote) {
+void Position::movePiece(const Coord& from, const Coord& to, PieceType promote) {
 	Piece piece = board[from.y*BOARD_SIZE_X+from.x];
 
 	PieceType type = pieceToType(piece);
@@ -53,19 +53,23 @@ void Position::movePiece(const Coord& from, const Coord& to, const PieceType pro
 	nextTurn();
 }
 
-void Position::castles(const CastlingSide side) {
-	Coord kPos = board.getKingPos(toMove);
+void Position::castles(CastlingSide side, Player pl) {
+    Coord kPos = board.getKingPos(pl);
 
-	int rx = side * (BOARD_SIZE_X - 1);
-	int ry = toMove * (BOARD_SIZE_Y - 1);
-	int xSign = (side ? 1 : -1);
+    int rx = side * (BOARD_SIZE_X - 1);
+    int ry = pl * (BOARD_SIZE_Y - 1);
+    int xSign = (side ? 1 : -1);
 
-	// Move pieces
-	board.movePiece(kPos, {kPos.x + 2 * xSign, ry});
-	board.movePiece({rx,ry}, {kPos.x + xSign, ry});
+    // Move pieces
+    board.movePiece(kPos, {kPos.x + 2 * xSign, ry});
+    board.movePiece({rx,ry}, {kPos.x + xSign, ry});
 
-	// Invalidate castling variables
-	castlePerms[toMove] = CASTLES_NONE;
+    // Invalidate castling variables
+    castlePerms[pl] = CASTLES_NONE;
+}
+
+void Position::castles(CastlingSide side) {
+    castles(side, toMove);
 
 	// Invalidate en passant opportunity
 	passant = {-1,-1};

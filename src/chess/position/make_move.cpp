@@ -2,7 +2,7 @@
 
 namespace chess {
 
-bool Position::findValidMove(MoveInfo& move, const Player by) const {
+bool Position::findValidMove(MoveInfo& move, Player by) const {
 	if (move.to.y == -1 || move.to.x == -1) {
 		// Must be absolute target square coordinates
 		return false; 
@@ -45,7 +45,7 @@ bool Position::findValidMove(MoveInfo& move, const Player by) const {
 	return true;
 }
 
-bool Position::makeMove(MoveInfo& move, const Player pl) {
+bool Position::makeMove(MoveInfo& move, Player pl) {
 	if (move.castles != CASTLES_NONE) {
 		// Castling
 		if (move.castles != CASTLES_QSIDE && move.castles != CASTLES_KSIDE) {

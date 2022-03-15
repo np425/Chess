@@ -10,13 +10,11 @@ class ChessGame : public Position {
 	Moves moves;
 
 public:
-	ChessGame(const char*);
-	ChessGame(Board={}, PositionInfo={}, Tags={}, Moves={});
+	explicit ChessGame(Board={}, PositionInfo={}, Tags={}, Moves={});
 
 	const Tags& getTags() const;
 	const Moves& getMoves() const;
 
-	bool loadPGN(const char*);
 	bool buildPos();
 
 	void updateTag(Tag);

@@ -5,11 +5,11 @@
 
 namespace chess {	
 
-PieceType charToType(const char chr);
+PieceType charToType(char chr);
 
-PieceType charToPromoteType(const char chr);
+PieceType charToPromoteType(char chr);
 
-CastlingSide charToCastlingSide(const char chr);
+CastlingSide charToCastlingSide(char chr);
 
 }
 

@@ -27,7 +27,7 @@ bool MoveParser::readPromoteSymbol() {
 }
 
 int MoveParser::readCoordPoints(Coord& coord) {
-	unsigned read = 0;
+	int read = 0;
 	if (readX(coord.x)) {
 		++read;
 	}
@@ -43,6 +43,7 @@ bool MoveParser::readChecks(CheckType& checks) {
 	} else if (readChar('#')) {
 		checks = CheckType::Checkmate;
 	} else {
+        checks = CheckType::None;
 		return false;
 	}
 	return true;
@@ -55,7 +56,7 @@ int MoveParser::readComment() {
 			++it;
 		}
 	} else if (readChar('{')) {
-		// Comment to the next }, wraps
+		// Comment to the next curly brace, wraps
 		while (*it != '}' && *it) {
 			++it;
 		}
@@ -89,49 +90,49 @@ bool MoveParser::readCastling(CastlingSide& side) {
 	return true;
 }
 
-bool MoveParser::readMove(MoveInfo& move) {
-	move.castles = CASTLES_NONE;
-	move.capture = false;
+bool MoveParser::readMove(MoveInfo& theMove) {
+    theMove.castles = CASTLES_NONE;
+    theMove.capture = false;
 	
 	// Invalidate coordinates
-	move.from = {-1,-1};
-	move.to = {-1,-1};
+	theMove.from = {-1, -1};
+    theMove.to = {-1, -1};
 
 	// For keeping track if given piece symbolic
 	bool explicitPiece = true; 
 
 	// Piece names have to be in uppercase to avoid ambiguity with pawns
-	move.type = charToType(*it);
+	theMove.type = charToType(*it);
 
-	if (islower(*it) || !move.type) {
-		// If not a piece symbol then assume either a pawn move or castles
-		move.type = PAWN; 
+	if (islower(*it) || !theMove.type) {
+		// If not a piece symbol then assume either a pawn theMove or castles
+		theMove.type = PAWN;
 		explicitPiece = false;
 	} else {
 		// Skip piece character
 		++it; 
 	}
 
-	int read = readCoordPoints(move.from);
+	int read = readCoordPoints(theMove.from);
 	if (read > 0) {
-		if (readX(move.to.x)) {
-			return readY(move.to.y);
+		if (readX(theMove.to.x)) {
+			return readY(theMove.to.y);
 		} else if (readCaptureSymbol()) {
-			move.capture = true;
-			return readX(move.to.x) && readY(move.to.y);
+            theMove.capture = true;
+			return readX(theMove.to.x) && readY(theMove.to.y);
 		} else if (read == 2) {
-			move.to = move.from;
-			move.from = {-1,-1};
+            theMove.to = theMove.from;
+            theMove.from = {-1, -1};
 		} else {
 			// Malformed piece
 			return false;
 		}
 	} else if (explicitPiece && readCaptureSymbol()) {
-		move.capture = true;
-		return readX(move.to.x) && readY(move.to.y);
+        theMove.capture = true;
+		return readX(theMove.to.x) && readY(theMove.to.y);
 	} else if (!explicitPiece) {
 		// If not marked with piece, then it has to be castling
-		return readCastling(move.castles);
+		return readCastling(theMove.castles);
 	} else {
 		// No piece
 		return false;

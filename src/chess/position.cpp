@@ -19,7 +19,7 @@ const Coords& Position::getChecks() const {
 	return checks;
 }
 
-const CastlingPerms& Position::getCastlingPerms(const Player pl) const {
+const CastlingPerms& Position::getCastlingPerms(Player pl) const {
 	return castlePerms[pl];
 }
 

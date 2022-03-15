@@ -28,8 +28,8 @@ bool savePGNToFile(const std::string& fileName, const ChessGame& game) {
 	}
 
 	Tags tags = game.getTags();
-	for (auto it = tags.begin(); it != tags.end(); ++it) {
-		f << "[" << it->first << " \"" << it->second << "\"]" << std::endl;
+	for (auto & tag : tags) {
+		f << "[" << tag.first << " \"" << tag.second << "\"]" << std::endl;
 	}
 
 	if (!tags.empty()) {

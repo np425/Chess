@@ -96,7 +96,7 @@ bool PGNParser::readTags(Tags& tags) {
 	return true;
 }
 
-bool PGNParser::readResult(GameState& state, const unsigned lastMoveNum) {
+bool PGNParser::readResult(GameState& state, unsigned lastMoveNum) {
 	if (readString("1/2")) {
 		int sign = (lastMoveNum % 2 == 0 ? +1 : -1);
 		state = sign * DRAW;
@@ -188,12 +188,12 @@ bool PGNParser::readMoves(Moves& moves, unsigned &lastMoveNum) {
 	}
 
 	if (fullMoveNum) {
-		// Must be move after move number
+		// Must be a move after move number
 		return false;
 	}
 
 	// After not being able to read a move
-	// assume it's the end of moves list
+	// assume it's the end of the moves list
 	return true;
 }
 

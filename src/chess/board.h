@@ -20,17 +20,17 @@ const Piece DEFAULT_BOARD[] = {
 
 class Board {
 protected:
-	Piece board[BOARD_SIZE];
-	Coord kingPos[2];
+	Piece board[BOARD_SIZE]{};
+	Coord kingPos[2]{};
 	
 public:
-	Board(const Piece* =DEFAULT_BOARD); 
+	explicit Board(const Piece* =DEFAULT_BOARD);
 	Piece operator[](unsigned) const;
 
 	const Piece* getBoard() const;
-	Coord getKingPos(const Player) const;
+	Coord getKingPos(Player) const;
 
-	void placePiece(const Piece, const Coord&);
+	void placePiece(Piece, const Coord&);
 	void movePiece(const Coord&, const Coord&);
 	void clearPiece(const Coord&);
 

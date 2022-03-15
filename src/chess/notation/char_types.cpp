@@ -3,7 +3,7 @@
 
 namespace chess {	
 
-PieceType charToType(const char chr) { 
+PieceType charToType(char chr) {
 	switch (toupper(chr)) {
 		case 'R':
 			return ROOK;
@@ -22,7 +22,7 @@ PieceType charToType(const char chr) {
 	}
 }
 
-PieceType charToPromoteType(const char chr) {
+PieceType charToPromoteType(char chr) {
 	switch (toupper(chr)) {
 		case 'R': 
 			return ROOK;
@@ -38,7 +38,7 @@ PieceType charToPromoteType(const char chr) {
 
 }
 
-CastlingSide charToCastlingSide(const char chr) {
+CastlingSide charToCastlingSide(char chr) {
 	switch (toupper(chr)) {
 		case 'K':
 			return CASTLES_KSIDE;

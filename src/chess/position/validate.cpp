@@ -1,19 +1,18 @@
 #include "../position.h"
 
 namespace chess {
-
 bool Position::validate() {
 	if (!board.validate()) {
 		return false;
 	}
 
-	// Checks	
+	// Checks
 	for (int pl = WHITE; pl <= BLACK; ++pl) {
 		updateChecks((Player)pl);
 		if (!checks.empty() && pl != toMove) {
 			// Opposite player of the one who is about to move cannot have a check
 			return false;
-		} 
+		}
 	}
 
 	// Passant

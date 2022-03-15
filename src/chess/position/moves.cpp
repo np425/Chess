@@ -26,7 +26,7 @@ bool Position::isPathToMoveClear(const Coord& from, const Coord& moveFrom, const
 	return true;
 }
 
-bool Position::canCastle(const CastlingSide side, const Player pl) const {
+bool Position::canCastle(const CastlingSide side, Player pl) const {
 	if (!(castlePerms[pl] & side)) {
 		// If moved the rook or castled, cannot castle anymore
 		return false;
@@ -84,7 +84,7 @@ bool Position::isValidPawnMove(const Coord& from, const Coord& to) const {
 
 	// Pawn up moves
 	if (dx || target) {
-		// Must not be move to side and must be empty target square
+		// Must not be a move to the side and must be empty target square
 		return false;
 	}
 		
@@ -261,7 +261,7 @@ bool Position::canMove(const Coord& from, const Coord& to) const {
 	return doesMovePreventCheck(from, to);
 }
 
-void Position::getMoves(const Coord& coord, Coords& moves, const Player by) const {
+void Position::getMoves(const Coord& coord, Coords& moves, Player by) const {
 	for (int y = 0; y < BOARD_SIZE_Y; ++y) {
 		for (int x = 0; x < BOARD_SIZE_X; ++x) {
 			Piece target = board[y * BOARD_SIZE_X + x];

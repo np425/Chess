@@ -1,8 +1,6 @@
 #ifndef CHESS_PGN_H
 #define CHESS_PGN_H
 
-#define PGN_MAX_LENGTH 10000
-
 #include "notation.h"
 #include "../chess.h"
 
@@ -21,11 +19,11 @@ class PGNParser : public BasicNotationParser {
 	bool readMoves(Moves&, unsigned&);
 
 	// Result
-	bool readResult(GameState&, const unsigned);
+	bool readResult(GameState&, unsigned);
 public:
-	PGNParser(ChessGame*, const char* = nullptr);
+	explicit PGNParser(ChessGame*, const char* = nullptr);
 
-	virtual bool parse() override;
+	bool parse() override;
 
 	ChessGame* getGame() const;
 };

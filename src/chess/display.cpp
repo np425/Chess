@@ -1,12 +1,12 @@
 #include "display.h"
-#include <iostream> // std::cout, std::endl
-#include <iomanip> // std::setw, std::left
+#include <iostream>
+#include <iomanip>
 
 // TODO: Add cross-platform colours
 
 namespace chess {
 
-char pieceTypeToChar(const PieceType type) {
+char pieceTypeToChar(PieceType type) {
 	switch (type) {
 		case ROOK:
 			return 'R';
@@ -27,7 +27,12 @@ char pieceTypeToChar(const PieceType type) {
 	}
 }
 
-const char* playerToString(const Player pl) {
+char pieceToChar(Piece piece) {
+    PieceType type = pieceToType(piece);
+    return pieceTypeToChar(type);
+}
+
+const char* playerToString(Player pl) {
 	switch (pl) {
 		case WHITE:
 			return "white";
@@ -40,7 +45,7 @@ const char* playerToString(const Player pl) {
 	}
 }
 
-const char* stateToString(const GameState gameState) {
+const char* stateToString(GameState gameState) {
 	GameStateType type = stateToType(gameState);
 	switch (type) {
 		case CHECKMATE:
@@ -66,7 +71,7 @@ void displayBoard(const Board& board) {
 	}
 	std::cout << "|" << std::endl; 
 
-	// Seperator
+	// Separator
 	std::cout << "---|-"; 
 	for (int x = 0; x < BOARD_SIZE_X; ++x) {
 		std::cout << "--";
@@ -80,24 +85,15 @@ void displayBoard(const Board& board) {
 
 		for (int x = 0; x < BOARD_SIZE_X; ++x) {
 			Piece piece = board[y*BOARD_SIZE_X+x];
-			PieceType type = pieceToType(piece);
-			// Player player = pieceToPlayer(piece);
- 
-			//if (player == PL_WHITE) {
-			//	std::cout << "\033[1;34m";
-			//} else if (player == PL_BLACK) {
-			//	std::cout << "\033[1;31m";
-			//}
-			
-			std::cout << pieceTypeToChar(type) << " ";
-			//std::cout << "\033[0m";
+
+			std::cout << pieceToChar(piece) << " ";
 		}
 
 		// Rank Number
 		std::cout << "| " << y+1 << std::endl;
 	}
 
-	// Seperator
+	// Separator
 	std::cout << "---|-"; 
 	for (int x = 0; x < BOARD_SIZE_X; ++x) {
 		std::cout << "--";
@@ -114,10 +110,10 @@ void displayBoard(const Board& board) {
 
 
 void displayPieces(const Board& board, const Coords& squares) {
-	for (auto it = squares.begin(); it != squares.end(); ++it) {
-		Piece piece = board[it->y * BOARD_SIZE_Y +it->x];
+	for (auto square : squares) {
+		Piece piece = board[square.y * BOARD_SIZE_Y +square.x];
 		std::cout << "- " << pieceTypeToChar(pieceToType(piece))
-				  << "{" << it->x << "," << it->y << "}" << std::endl;
+				  << "{" << square.x << "," << square.y << "}" << std::endl;
 	}
 }
 
@@ -182,8 +178,8 @@ void displayMoveInfo(const MoveInfo& move) {
 }
 
 void displayTags(const Tags& tags) {
-	for (auto it = tags.begin(); it != tags.end(); ++it) {
-		std::cout << it->first << ": " << it->second << std::endl;
+	for (const auto & tag : tags) {
+		std::cout << tag.first << ": " << tag.second << std::endl;
 	}
 }
 

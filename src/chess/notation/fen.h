@@ -6,9 +6,7 @@
 
 namespace chess {
 
-const unsigned FEN_MAX_LENGTH = 100;
-
-class FENParser : public BasicNotationParser {
+    class FENParser : public BasicNotationParser {
 protected:
 	Position* pos;
 
@@ -18,8 +16,8 @@ protected:
 	bool readPassant(Coord&);
 
 public:
-	FENParser(Position*, const char* = nullptr);
-	virtual bool parse() override;
+	explicit FENParser(Position*, const char* = nullptr);
+	bool parse() override;
 
 	Position* getPos() const;
 };

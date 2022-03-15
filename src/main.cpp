@@ -1,6 +1,4 @@
 #include <iostream>
-#include <fstream>
-#include <cstring>
 #include "chess/chess.h"
 #include "chess/display.h"
 #include "chess/notation/move_notation.h"
@@ -46,7 +44,6 @@ int main(int argc, char **argv) {
 	do {
 		if (!again && args.hasArgs()) {
 			if (!args.parse()) {
-				//std::cerr << "Failed to load args" << std::endl;	
 				return 1;
 			}
 		} else {

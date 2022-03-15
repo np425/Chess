@@ -6,7 +6,7 @@ const Piece* Board::getBoard() const {
 	return board;
 }
 
-Coord Board::getKingPos(const Player pl) const {
+Coord Board::getKingPos(Player pl) const {
 	return kingPos[pl];
 }
 

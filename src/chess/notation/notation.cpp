@@ -3,13 +3,13 @@
 
 namespace {
 
-// Unsigned power functions (no negative powers)
-unsigned u_pow(unsigned base, unsigned power) {
+    // Unsigned power to 10 function
+    unsigned u_pow10(unsigned power) {
 	unsigned res = 1;
 
 	while (power > 0) {
 		--power;
-		res *= base;
+		res *= 10;
 	}
 	return res;
 }	
@@ -21,9 +21,9 @@ namespace chess {
 BasicNotationParser::BasicNotationParser(const char* expr) : expr(expr), it(expr), validExpr(false) {
 }
 
-bool BasicNotationParser::parseStr(const char* expr) {
-	this->expr = expr;
-	it = expr;
+bool BasicNotationParser::parseStr(const char* newExpr) {
+	this->expr = newExpr;
+	it = newExpr;
 	validExpr = parse();
 	return validExpr;
 }
@@ -94,7 +94,7 @@ bool BasicNotationParser::readInsensitiveChar(const char expected) {
 }
 
 int BasicNotationParser::readUnsignedInt(unsigned& num) {
-	unsigned l = 0;
+	int l = 0;
 	num = 0;
 
 	while (*(it+l) >= '0' && *(it+l) <= '9') {
@@ -108,7 +108,7 @@ int BasicNotationParser::readUnsignedInt(unsigned& num) {
 
 	for (int i = l; i; --i) { // Construct number
 		unsigned digit = *it - '0';
-		num += (u_pow(10, l-1) * digit);
+		num += (u_pow10(l - 1) * digit);
 		++it;
 	}
 	return l;

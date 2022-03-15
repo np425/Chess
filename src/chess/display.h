@@ -7,9 +7,9 @@
 
 namespace chess {
 
-char pieceToChar(const Piece piece);
-const char* stateToString(const GameState gameState);
-const char* playerToString(const Player player);
+char pieceToChar(Piece piece);
+const char* stateToString(GameState gameState);
+const char* playerToString(Player player);
 
 void displayBoard(const Board& board);
 void displayPosInfo(const Position& pos);

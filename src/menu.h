@@ -24,7 +24,7 @@ class MenuWrapper {
 	bool promptTag();
 
 public:
-	MenuWrapper(chess::ChessGame*);
+	explicit MenuWrapper(chess::ChessGame*);
 	chess::ChessGame* getGame() const;
 
 	static EndMenuChoice readEndMenuChoice();

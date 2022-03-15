@@ -19,8 +19,8 @@ class MoveParser : public BasicNotationParser {
 	bool readMove(MoveInfo&);
 
 public:
-	MoveParser(MoveInfo*, const char* = nullptr);
-	virtual bool parse() override;
+	explicit MoveParser(MoveInfo*, const char* = nullptr);
+	bool parse() override;
 
 	MoveInfo* getMove() const;
 };

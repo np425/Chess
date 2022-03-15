@@ -15,14 +15,14 @@ protected:
 	bool readX(int&);
 	bool readY(int&);
 	bool readPlayer(Player& pl);
-	bool readInsensitiveChar(const char);
-	bool readChar(const char);
+	bool readInsensitiveChar(char);
+	bool readChar(char);
 	int readUnsignedInt(unsigned&);
 	int readInsensitiveString(const char*);
 	int readString(const char*);
 
 public:
-	BasicNotationParser(const char* = nullptr);
+	explicit BasicNotationParser(const char* = nullptr);
 
 	virtual bool parse() = 0;
 	bool parseStr(const char*);

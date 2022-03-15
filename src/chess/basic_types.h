@@ -1,7 +1,6 @@
 #ifndef CHESS_BASIC_TYPES_H
 #define CHESS_BASIC_TYPES_H
 
-#include "fixed_array.h"
 #include <map>
 #include <vector>
 #include <string>
@@ -9,11 +8,6 @@
 #define BOARD_SIZE_X 8
 #define BOARD_SIZE_Y 8
 #define BOARD_SIZE (BOARD_SIZE_X * BOARD_SIZE_Y)
-#define MAX_ATTACKERS 16
-#define FIRST_TO_MOVE WHITE
-#define TAG_LENGTH 30
-#define MAX_TAGS 30
-#define MAX_MOVES 200
 
 namespace chess {
 
@@ -60,7 +54,7 @@ struct MoveInfo {
 	PieceType type;
 	PieceType promote;
 
-	// Prior piece coordinates: where piece is
+	// Previous piece coordinates: where piece is
 	Coord from;
 
 	// Move coordinates: where piece is moving

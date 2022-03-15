@@ -1,5 +1,5 @@
 #include "chess.h"
-#include <cstring>
+#include <utility>
 
 namespace chess {
 
@@ -12,19 +12,19 @@ const Moves& ChessGame::getMoves() const {
 }
 
 ChessGame::ChessGame(Board newBoard, PositionInfo posInfo, Tags tags, Moves moves) 
-            : Position(newBoard, posInfo), tags(tags), moves(moves) {
+            : Position(newBoard, posInfo), tags(std::move(tags)), moves(std::move(moves)) {
 }
 
 void ChessGame::setMoves(Moves newMoves) {
-	moves = newMoves;
+	moves = std::move(newMoves);
 }
 
-//void ChessGame::setTags(Tags newTags) {
-//	tags = newTags;
-//}
+void ChessGame::setTags(Tags newTags) {
+    tags = std::move(newTags);
+}
 
 bool ChessGame::buildPos() {
-	Moves::iterator move = moves.begin();
+	auto move = moves.begin();
 	while (move < moves.end() && !isGameOver()) {
 		if (!Position::makeMove(move->move)) {
 			// Invalid move
