@@ -40,7 +40,7 @@ class CLIArgParser {
 	bool readTags();
 
 public:
-	CLIArgParser(chess::ChessGame*, const int, const char**);
+	CLIArgParser(chess::ChessGame*, int, const char**);
 
 	chess::ChessGame* getGame() const;
 	std::string getSaveFileName() const;

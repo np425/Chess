@@ -101,14 +101,16 @@ bool CLIArgParser::parse() {
 				break;
 			case ARG_SAVE:
 				if (saveToFileArg) {
-					std::cerr << "Only one file can be selected for saving" << std::endl;
-					return false;
-				}
+                    std::cerr << "Only one file can be selected for saving" << std::endl;
+                    return false;
+                }
+                saveToFileArg = true;
+
 				if (!readFileName(save)) {
 					std::cerr << "Failed to read save file name" << std::endl;
 					return false;
 				}
-				saveToFileArg = true;
+                break;
 			default:
 				std::cerr << "Unknown argument: " << *(it-1) << std::endl;
 				return false;
