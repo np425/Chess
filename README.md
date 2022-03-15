@@ -1,6 +1,7 @@
 # Chess
 Simple chess game written in C++
 
+---
 ## Compilation
 
 ### Unix (MacOS/Linux)
