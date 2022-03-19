@@ -12,7 +12,7 @@ GameState playChess(ChessGame& game) {
 	NotatedMove move;
 	MoveParser parser(&move.move);
 
-	displayBoard(game.getBoard());
+	displayInterface(game);
 
 	while (!game.isGameOver()) {
 		std::cout << playerToString(game.getPlayer()) << " to move: ";
@@ -23,7 +23,7 @@ GameState playChess(ChessGame& game) {
 		} else if (!game.makeMove(move)) {
 			std::cerr << "Invalid move in position" << std::endl;
 		} else {
-			displayBoard(game.getBoard());
+			displayInterface(game);
 		}
 	}
 

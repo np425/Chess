@@ -4,19 +4,22 @@
 #include "utils.h"
 #include "board.h"
 #include "position.h"
+#include "chess.h"
 
 namespace chess {
 
-char pieceToChar(Piece piece);
-const char* stateToString(GameState gameState);
-const char* playerToString(Player player);
+char pieceToChar(Piece);
+const char* stateToString(GameState);
+const char* playerToString(Player);
 
-void displayBoard(const Board& board);
-void displayPosInfo(const Position& pos);
-void displayPieces(const Board& board, const Coords& squares);
+void displayBoard(const Board&);
+void displayPosInfo(const Position&);
+void displayPieces(const Board&, const Coords&);
 
-void displayMoveInfo(const MoveInfo& move);
-void displayTags(const Tags& tags);
+void displayMoveInfo(const MoveInfo&);
+void displayTags(const Tags&);
+
+void displayInterface(const ChessGame&);
 
 }
 

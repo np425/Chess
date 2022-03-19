@@ -12,8 +12,8 @@ class ChessGame : public Position {
 public:
 	explicit ChessGame(Board={}, PositionInfo={}, Tags={}, Moves={});
 
-	const Tags& getTags() const;
-	const Moves& getMoves() const;
+	Tags getTags() const;
+	Moves getMoves() const;
 
 	bool buildPos();
 

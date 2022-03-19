@@ -3,11 +3,11 @@
 
 namespace chess {
 
-const Tags& ChessGame::getTags() const {
+Tags ChessGame::getTags() const {
 	return tags;
 }
 
-const Moves& ChessGame::getMoves() const {
+Moves ChessGame::getMoves() const {
 	return moves;
 }
 

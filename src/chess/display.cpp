@@ -1,4 +1,5 @@
 #include "display.h"
+#include "chess.h"
 #include <iostream>
 #include <iomanip>
 
@@ -106,6 +107,93 @@ void displayBoard(const Board& board) {
 		std::cout << (char)('A'+x) << " ";
 	}
 	std::cout << "|" << std::endl;
+}
+
+void displayInterface(const ChessGame& game) {
+    Moves moves = game.getMoves();
+    auto mIt = moves.begin();
+//    int moveCount = 0;
+
+    // File Number
+    std::cout << "   | ";
+    for (int x = 0; x < BOARD_SIZE_X; ++x) {
+        std::cout << (char)('A'+x) << " ";
+    }
+    std::cout << "|   ";
+    std::cout << "    ";
+
+//    for (int i = 0; i < 2 && mIt != moves.end(); ++i) {
+//        std::cout << " " << mIt->notation;
+//        ++mIt;
+//    }
+    std::cout << std::endl;
+
+    // Separator
+    std::cout << "---|-";
+    for (int x = 0; x < BOARD_SIZE_X; ++x) {
+        std::cout << "--";
+    }
+    std::cout << "|---";
+    std::cout << "    ";
+
+    for (int i = 0; i < 2 && mIt != moves.end(); ++i) {
+        std::cout << " " << mIt->notation;
+        ++mIt;
+    }
+    std::cout << std::endl;
+
+    // Board
+    for (int y = BOARD_SIZE_Y-1; y >= 0; --y) {
+        // Rank Number
+        std::cout << " " << y+1 << " | ";
+
+        for (int x = 0; x < BOARD_SIZE_X; ++x) {
+            Piece piece = game.getBoard()[y*BOARD_SIZE_X+x];
+
+            std::cout << pieceToChar(piece) << " ";
+        }
+
+        // Rank Number
+        std::cout << "| " << y+1 << " ";
+        std::cout << "    ";
+
+        for (int i = 0; i < 2 && mIt != moves.end(); ++i) {
+            std::cout << " " << mIt->notation;
+            ++mIt;
+        }
+
+        std::cout << std::endl;
+    }
+
+    // Separator
+    std::cout << "---|-";
+    for (int x = 0; x < BOARD_SIZE_X; ++x) {
+        std::cout << "--";
+    }
+    std::cout << "|---";
+    std::cout << "    ";
+
+    for (int i = 0; i < 2 && mIt != moves.end(); ++i) {
+        std::cout << " " << mIt->notation;
+        ++mIt;
+    }
+    std::cout << std::endl;
+
+    // File Number
+    std::cout << "   | ";
+    for (int x = 0; x < BOARD_SIZE_X; ++x) {
+        std::cout << (char)('A'+x) << " ";
+    }
+    std::cout << "|   ";
+    std::cout << "    ";
+
+    do {
+        for (int i = 0; i < 2 && mIt != moves.end(); ++i) {
+            std::cout << " " << mIt->notation;
+            ++mIt;
+        }
+        std::cout << std::endl;
+    } while (mIt != moves.end());
 }
 
 
