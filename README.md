@@ -18,7 +18,7 @@ Just load the CMake project with IDE like Visual Studio or CLion
 ## How to Play
 - When launching the game, you can select initial position: default, or from FEN or PGN format and describe the game
 - Describe the game option allows you to add tags to the game such as names of white and black players.
-- Moves are handled through [Algebraic Notation](#algebraic-notation-steps)
+- Moves are selected through [Algebraic Notation](#algebraic-notation-steps)
 - After game ends, you can save the game in PGN format to a game and play again or quit the game
 
 ---
