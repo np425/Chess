@@ -18,7 +18,7 @@ Moves::const_iterator ChessGame::getCurMove() const {
     return curMove;
 }
 
-const Position& ChessGame::getPos() const {
+const Position &ChessGame::getPos() const {
     return curPos;
 }
 
@@ -73,12 +73,11 @@ bool ChessGame::makeMove(NotatedMove move) {
     if (!curPos.makeMove(move.move)) {
         return false;
     }
-//    unsigned x = curMove - moves.end();
-
+    if (curMove != moves.end()) {
+        curMove = moves.erase(curMove, moves.end());
+    }
     curMove = moves.insert(curMove, move);
     ++curMove;
-
-//    curMove = moves.begin() + x;
 
     return true;
 }
@@ -98,10 +97,10 @@ void ChessGame::setPosition(const Piece *pieces, PositionInfo posInfo) {
 }
 
 void ChessGame::setPositionInfo(const PositionInfo &posInfo) {
-   initialPos.setPositionInfo(posInfo);
-   curPos.setPositionInfo(posInfo);
-   moves.clear();
-   curMove = moves.end();
+    initialPos.setPositionInfo(posInfo);
+    curPos.setPositionInfo(posInfo);
+    moves.clear();
+    curMove = moves.end();
 }
 
 bool ChessGame::isGameOver() {
