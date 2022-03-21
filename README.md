@@ -35,10 +35,10 @@ Just load the CMake project with IDE like Visual Studio or CLion
 5. If piece to be moved is a pawn, promotion symbolic may be given (`=P`), where P is [Pieces Denotation](#pieces-denotation), piece may not be king or pawn.
 
 ### Examples
-- e4 or Pe4 (pawn goes to e4 square)
-- Bxe4 (Bishop takes e4 square)
-- Qxf7# (Queen takes f7 with checkmate)
-- Pe8=Q or e8=Q (Pawn moves to e8 and promote to a queen)
+- `e4` or `Pe4` (pawn goes to e4 square)
+- `Bxe4` (Bishop takes e4 square)
+- `Qxf7#` (Queen takes f7 with checkmate)
+- `Pe8=Q+` or `e8=Q+` (Pawn moves to e8, promotes to a queen with a check)
 
 ---
 ## Castling Notation
