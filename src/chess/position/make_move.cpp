@@ -1,4 +1,5 @@
 #include "../position.h"
+#include "utils.h"
 
 namespace chess {
 
@@ -15,18 +16,12 @@ bool Position::findValidMove(MoveInfo& move, Player by) const {
 	for (auto it = moves.begin(); it < moves.end(); ++it) {
 		// Filter the right move
 
-		Piece piece = board[it->y * BOARD_SIZE_X + it->x];
+		Piece piece = board[*it];
 		PieceType type = pieceToType(piece);
 
-		if (type != move.type) {
-			continue;
-		}
-		if (move.from.x != -1 && it->x != move.from.x) {
-			continue;
-		}
-		if (move.from.y != -1 && it->y != move.from.y) {
-			continue;
-		}
+        if (type != move.type) {
+            continue;
+        }
 
 		if (chosen) {
 			// Ambiguous move
@@ -40,7 +35,7 @@ bool Position::findValidMove(MoveInfo& move, Player by) const {
 		return false; 
 	}
 
-	move.from = {chosen->x, chosen->y};
+    move.from = *chosen;
 
 	return true;
 }
@@ -69,7 +64,7 @@ bool Position::makeMove(MoveInfo& move, Player pl) {
 			return false;
 		}
 
-		if (board[move.to.y * BOARD_SIZE_X + move.to.x]) {
+		if (board[move.to]) {
 			move.capture = true;
 		}	
 

@@ -41,4 +41,4 @@ add_executable(Chess
         src/menu.cpp
         src/menu.h
         src/pgn_file.cpp
-        src/pgn_file.h)
+        src/pgn_file.h src/switch_move_notation.h src/switch_move_notation.cpp)

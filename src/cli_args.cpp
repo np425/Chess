@@ -27,10 +27,6 @@ CLIArgParser::CLIArgParser(ChessGame* game, const int argc, const char** argv)
 : game(game), argc(argc), argv(argv), it(argv), end(argv+argc) {
 }
 
-ChessGame* CLIArgParser::getGame() const {
-	return game;
-}
-
 std::string CLIArgParser::getSaveFileName() const {
 	return save;
 }
@@ -41,10 +37,6 @@ bool CLIArgParser::valid() const {
 
 bool CLIArgParser::hasArgs() const {
 	return argc > 1;
-}
-
-bool CLIArgParser::hasSaveFileName() const {
-	return !save.empty();
 }
 
 bool CLIArgParser::parse() {
@@ -68,7 +60,7 @@ bool CLIArgParser::parse() {
 					std::cerr << "Can't select multiple initial positions" << std::endl;
 					return false;
 				}
-				game->changePosition();
+                game->setPosition();
 				posSelected = true;
 				break;
 			case ARG_FEN:
@@ -225,13 +217,12 @@ bool CLIArgParser::readFEN() {
 	notation.pop_back();
 
 	Position pos;
-	FENParser fen(&pos, notation.c_str());
+	FENParser fen(game);
 
-	if (!fen.parse()) {
+	if (!fen.parseStr(notation.c_str())) {
 		return false;
 	}
 
-	game->changePosition(pos);
 	return true;
 }
 

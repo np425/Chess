@@ -18,23 +18,17 @@ bool validateTagField(const std::string& name) {
 MenuWrapper::MenuWrapper(ChessGame* game) : game(game) {
 }
 
-ChessGame* MenuWrapper::getGame() const {
-	return game;
-}
-
 bool MenuWrapper::promptFEN() {
 	std::string notation;
 	std::cout << "Enter FEN: " << std::endl;
 	std::getline(std::cin, notation);
 
-	Position pos;
-	FENParser parser(&pos, notation.c_str());	
+	FENParser parser(game);
 
-	if (!parser.parse()) {
+	if (!parser.parseStr(notation.c_str())) {
 		return false;
 	}
 
-	game->changePosition(pos);
 	return true;
 }
 
@@ -134,8 +128,8 @@ InitialMenuChoice MenuWrapper::readStartMenuChoice() {
 void MenuWrapper::openStartMenu() {
 	while (true) {
 		switch (readStartMenuChoice()) {
-			case DEFAULT_POS: 
-				game->changePosition();
+			case DEFAULT_POS:
+                game->setPosition();
 				return;
 			case CUSTOM_FEN: {
 				if (!promptFEN()) {

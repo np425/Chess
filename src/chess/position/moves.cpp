@@ -1,5 +1,6 @@
 #include "../position.h"
-				
+#include "utils.h"
+
 namespace chess {
 
 bool Position::isPathToMoveClear(const Coord& from, const Coord& moveFrom, const Coord& moveTo) const {
@@ -18,7 +19,7 @@ bool Position::isPathToMoveClear(const Coord& from, const Coord& moveFrom, const
 			continue;
 		}
 
-		if (board[iy * BOARD_SIZE_X + ix]) {
+		if (board[{ix,iy}]) {
 			return false; // Block piece found
 		}
 	}
@@ -45,7 +46,7 @@ bool Position::canCastle(const CastlingSide side, Player pl) const {
 
 	// Ensure empty squares in the castling direction
 	for (int ix = kPos.x + xSign; ix != rx; ix += xSign) {
-		if (board[ry * BOARD_SIZE_X + ix]) {
+		if (board[{ix,ry}]) {
 			return false;
 		}
 	}
@@ -56,7 +57,9 @@ bool Position::canCastle(const CastlingSide side, Player pl) const {
 		int x = kPos.x + ix * xSign;
 
 		getDefenders({x,ry}, defenders, (Player)!pl);
-		if (!defenders.empty()) return false;
+		if (!defenders.empty()) {
+            return false;
+        }
 	}
 
 	return true;
@@ -64,12 +67,12 @@ bool Position::canCastle(const CastlingSide side, Player pl) const {
 
 // Assume origin square is a pawn
 bool Position::isValidPawnMove(const Coord& from, const Coord& to) const {
-	Piece target = board[from.y * BOARD_SIZE_X + from.x];
+	Piece target = board[from];
 	Player pl = pieceToPlayer(target);
 	int sign = getPlayerSign(pl);
 
 	// One up
-	target = board[(from.y+sign)*BOARD_SIZE_X+to.x];
+	target = board[{to.x, from.y+sign}];
 
 	int dx = to.x-from.x;
 	int dy = to.y-from.y;
@@ -79,7 +82,7 @@ bool Position::isValidPawnMove(const Coord& from, const Coord& to) const {
 		Player targetPl = pieceToPlayer(target);
 
 		// Can capture or passant square
-		return targetPl == (Player)!pl || (passant.x == to.x && passant.y == to.y);
+		return targetPl == (Player)!pl || passant == to;
 	}
 
 	// Pawn up moves
@@ -96,15 +99,17 @@ bool Position::isValidPawnMove(const Coord& from, const Coord& to) const {
 	// Starting y for pawns
 	int py = pl*(BOARD_SIZE_X-1) + sign;
 
-	target = board[(from.y + 2 * sign) * BOARD_SIZE_X + from.x];
-	if (target) return false; // Must be empty target square
+	target = board[{from.x, from.y + 2 * sign}];
+	if (target) {
+        return false; // Must be empty target square
+    }
 	
 	// Pawn two up move
 	return dy == 2 * sign && from.y == py;
 }
 
 bool Position::isMovePinned(const Coord& from, const Coord& to) const {
-	Piece piece = board[from.y * BOARD_SIZE_X + from.x];
+	Piece piece = board[from];
 	Player pl = pieceToPlayer(piece);
 	Coord kPos = board.getKingPos(pl);
 
@@ -118,7 +123,7 @@ bool Position::isMovePinned(const Coord& from, const Coord& to) const {
 	}
 	
 	bool expectPassant = false;
-	if (pieceToType(piece) == PAWN && passant.x == to.x && passant.y == to.y) {
+	if (pieceToType(piece) == PAWN && passant == to) {
 		expectPassant = true;
 	}
 
@@ -132,7 +137,7 @@ bool Position::isMovePinned(const Coord& from, const Coord& to) const {
 
 	// Iterate from king to the piece's direction
 	for (; inBounds(ix, iy); ix += xSign, iy += ySign) {
-		Piece target = board[iy * BOARD_SIZE_X + ix];
+		Piece target = board[{ix,iy}];
 		if (!target) continue; // Skip empty squares
 
 		Player targetPl = pieceToPlayer(target);
@@ -142,7 +147,6 @@ bool Position::isMovePinned(const Coord& from, const Coord& to) const {
 				// Ignore passant piece to find pin
 				continue; 
 			} else if (foundPiece && canDefend(target, {ix,iy}, kPos)) {
-				// TODO: Rewrite this segment
 				// Make sure the piece can move in the pinned direction
 				int factor = ySign * BOARD_SIZE_X + xSign;
 				int toCoord = to.y * BOARD_SIZE_X + to.x;
@@ -167,18 +171,20 @@ bool Position::isMovePinned(const Coord& from, const Coord& to) const {
 }
 
 bool Position::doesMovePreventCheck(const Coord& from, const Coord& to) const {
-	Piece piece = board[from.y * BOARD_SIZE_X + from.x];
+	Piece piece = board[from];
 	PieceType type = pieceToType(piece);
 	Player pl = pieceToPlayer(piece);
 
 	unsigned checksAmount = checks.size();
 
-	if (!checksAmount) return true;
+	if (!checksAmount) {
+        return true;
+    }
 
 	Coords defenders;
 
 	if (checksAmount == 1) {
-		if (checks[0].x == to.x && checks[0].y == to.y) {
+		if (checks[0] == to) {
 			// 1. Attack the piece
 			if (type == KING) {
 				// If taking with the king, make sure the piece is not defended
@@ -207,7 +213,7 @@ bool Position::doesMovePreventCheck(const Coord& from, const Coord& to) const {
 			int toCoord = to.y * BOARD_SIZE_X + to.x;
 			int kCoord = kPos.y * BOARD_SIZE_X + kPos.x;
 
-			return signCT.x == signCK.x && signCT.y == signCK.y && (toCoord-kCoord) % factor == 0;
+            return signCT == signCK && (toCoord-kCoord) % factor == 0;
 		}
 	}
 
@@ -215,7 +221,7 @@ bool Position::doesMovePreventCheck(const Coord& from, const Coord& to) const {
 	if (type == KING) {
 		for (int y = 0; y < BOARD_SIZE_Y; ++y) {
 			for (int x = 0; x < BOARD_SIZE_X; ++x) {
-				piece = board[y * BOARD_SIZE_Y + x];
+				piece = board[{x,y}];
 				PieceType targetType = pieceToType(piece);
 				Player targetPl = pieceToPlayer(piece);
 
@@ -233,14 +239,14 @@ bool Position::doesMovePreventCheck(const Coord& from, const Coord& to) const {
 }
 
 bool Position::canMove(const Coord& from, const Coord& to) const {
-	Piece piece = board[from.y * BOARD_SIZE_X + from.x];
+	Piece piece = board[from];
 	Player pl = pieceToPlayer(piece);
 	PieceType type = pieceToType(piece);
 
-	piece = board[to.y * BOARD_SIZE_X + to.x];
+	piece = board[to];
 	Player targetPl = pieceToPlayer(piece);
 
-	if (targetPl == pl || (from.x == to.x && from.y == to.y)) {
+	if (targetPl == pl || (from == to)) {
 		// Cannot capture your own pieces or move to the same square
 		return false;
 	}
@@ -264,7 +270,7 @@ bool Position::canMove(const Coord& from, const Coord& to) const {
 void Position::getMoves(const Coord& coord, Coords& moves, Player by) const {
 	for (int y = 0; y < BOARD_SIZE_Y; ++y) {
 		for (int x = 0; x < BOARD_SIZE_X; ++x) {
-			Piece target = board[y * BOARD_SIZE_X + x];
+			Piece target = board[{x,y}];
 			Player targetPl = pieceToPlayer(target);
 			if (targetPl != by) continue;
 

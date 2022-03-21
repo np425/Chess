@@ -110,7 +110,8 @@ void displayBoard(const Board& board) {
 }
 
 void displayInterface(const ChessGame& game) {
-    Moves moves = game.getMoves();
+    const Moves& moves = game.getMoves();
+    auto mEnd = game.getCurMove();
     auto mIt = moves.begin();
 //    int moveCount = 0;
 
@@ -122,10 +123,6 @@ void displayInterface(const ChessGame& game) {
     std::cout << "|   ";
     std::cout << "    ";
 
-//    for (int i = 0; i < 2 && mIt != moves.end(); ++i) {
-//        std::cout << " " << mIt->notation;
-//        ++mIt;
-//    }
     std::cout << std::endl;
 
     // Separator
@@ -136,7 +133,7 @@ void displayInterface(const ChessGame& game) {
     std::cout << "|---";
     std::cout << "    ";
 
-    for (int i = 0; i < 2 && mIt != moves.end(); ++i) {
+    for (int i = 0; i < 2 && mIt != mEnd; ++i) {
         std::cout << " " << mIt->notation;
         ++mIt;
     }
@@ -148,7 +145,7 @@ void displayInterface(const ChessGame& game) {
         std::cout << " " << y+1 << " | ";
 
         for (int x = 0; x < BOARD_SIZE_X; ++x) {
-            Piece piece = game.getBoard()[y*BOARD_SIZE_X+x];
+            Piece piece = game.getPos().getBoard()[y*BOARD_SIZE_X+x];
 
             std::cout << pieceToChar(piece) << " ";
         }
@@ -157,7 +154,7 @@ void displayInterface(const ChessGame& game) {
         std::cout << "| " << y+1 << " ";
         std::cout << "    ";
 
-        for (int i = 0; i < 2 && mIt != moves.end(); ++i) {
+        for (int i = 0; i < 2 && mIt != mEnd; ++i) {
             std::cout << " " << mIt->notation;
             ++mIt;
         }
@@ -173,7 +170,7 @@ void displayInterface(const ChessGame& game) {
     std::cout << "|---";
     std::cout << "    ";
 
-    for (int i = 0; i < 2 && mIt != moves.end(); ++i) {
+    for (int i = 0; i < 2 && mIt != mEnd; ++i) {
         std::cout << " " << mIt->notation;
         ++mIt;
     }
@@ -188,12 +185,12 @@ void displayInterface(const ChessGame& game) {
     std::cout << "    ";
 
     do {
-        for (int i = 0; i < 2 && mIt != moves.end(); ++i) {
+        for (int i = 0; i < 2 && mIt != mEnd; ++i) {
             std::cout << " " << mIt->notation;
             ++mIt;
         }
         std::cout << std::endl;
-    } while (mIt != moves.end());
+    } while (mIt != mEnd);
 }
 
 

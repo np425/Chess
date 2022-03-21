@@ -18,22 +18,13 @@ namespace {
 
 namespace chess {
 
-BasicNotationParser::BasicNotationParser(const char* expr) : expr(expr), it(expr), validExpr(false) {
-}
-
-bool BasicNotationParser::parseStr(const char* newExpr) {
-	this->expr = newExpr;
-	it = newExpr;
-	validExpr = parse();
-	return validExpr;
+bool BasicNotationParser::parseStr(const char* expr) {
+	it = expr;
+	return parse();
 }
 
 const char* BasicNotationParser::end() const {
 	return it;
-}
-
-bool BasicNotationParser::valid() const {
-	return validExpr;
 }
 
 bool BasicNotationParser::readX(int& x) {
@@ -77,15 +68,6 @@ bool BasicNotationParser::readPlayer(Player& pl) {
 
 bool BasicNotationParser::readChar(const char expected) {
 	if (*it != expected) {
-		return false;
-	}
-
-	++it;
-	return true;
-}
-
-bool BasicNotationParser::readInsensitiveChar(const char expected) {
-	if (toupper(*it) != toupper(expected)) {
 		return false;
 	}
 

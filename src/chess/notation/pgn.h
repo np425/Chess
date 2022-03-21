@@ -18,14 +18,13 @@ class PGNParser : public BasicNotationParser {
 	bool readMove(NotatedMove&);
 	bool readMoves(Moves&, unsigned&);
 
+    bool parse() override;
+
 	// Result
 	bool readResult(GameState&, unsigned);
 public:
-	explicit PGNParser(ChessGame*, const char* = nullptr);
+	explicit PGNParser(ChessGame*);
 
-	bool parse() override;
-
-	ChessGame* getGame() const;
 };
 
 }

@@ -27,28 +27,20 @@ Coord Position::getPassant() const {
 	return passant;
 }
 
-Position::Position(Board newBoard, PositionInfo info) : board(newBoard) {
-	changePositionInfo(info);
+Position::Position(const Piece* pieces, PositionInfo info) : board(pieces), PositionInfo(info) {
 }
 
-void Position::changePosition(Board newBoard, PositionInfo info) {
-	board = newBoard;
-	changePositionInfo(info);
+void Position::setBoard(const Piece *pieces) {
+    board.setBoard(pieces);
 }
 
-void Position::changePosition(const Position& pos) {
-	board = pos.getBoard();
-	changePositionInfo(pos);
+void Position::setPosition(const Piece* pieces, PositionInfo info) {
+    setBoard(pieces);
+    setPositionInfo(info);
 }
 
-void Position::changePositionInfo(const PositionInfo& info) {
-	toMove = info.toMove;
-	castlePerms[0] = info.castlePerms[0];
-	castlePerms[1] = info.castlePerms[1];
-	passant = info.passant;
-	state = info.state;
-	fullMoves = info.fullMoves;
-	halfMoves = info.halfMoves;
+void Position::setPositionInfo(const PositionInfo& info) {
+    PositionInfo::operator=(info);
 }
 
 }

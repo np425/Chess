@@ -7,31 +7,23 @@ namespace chess {
 
 class BasicNotationParser {
 protected:
-	const char* expr;
-	const char* it;
-	bool validExpr;
+	const char* it = nullptr;
 
 	// Basic reading functions
 	bool readX(int&);
 	bool readY(int&);
 	bool readPlayer(Player& pl);
-	bool readInsensitiveChar(char);
-	bool readChar(char);
+    bool readChar(char);
 	int readUnsignedInt(unsigned&);
 	int readInsensitiveString(const char*);
 	int readString(const char*);
 
+    virtual bool parse() = 0;
 public:
-	explicit BasicNotationParser(const char* = nullptr);
-
-	virtual bool parse() = 0;
 	bool parseStr(const char*);
 
 	// Returns pointer to parsing end
 	const char* end() const;
-
-	// Returns bool representing whether the expression
-	bool valid() const;
 };
 
 }

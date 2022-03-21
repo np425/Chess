@@ -1,5 +1,6 @@
 #include "chess/notation/pgn.h"
 #include "pgn_file.h"
+#include "utils.h"
 #include <fstream>
 #include <sstream>
 
@@ -16,8 +17,8 @@ bool loadPGNFromFile(const std::string& fileName, ChessGame& game) {
 	buffer << f.rdbuf();
 	pgn = buffer.str();
 
-	PGNParser parser(&game, pgn.c_str());
-	return parser.parse();
+	PGNParser parser(&game);
+	return parser.parseStr(pgn.c_str());
 }
 
 bool savePGNToFile(const std::string& fileName, const ChessGame& game) {
@@ -39,16 +40,16 @@ bool savePGNToFile(const std::string& fileName, const ChessGame& game) {
 	unsigned moveNum = 0;
 
 	Moves moves = game.getMoves();
-	for (auto it = moves.begin(); it != moves.end(); ++it) {
+	for (auto & move : moves) {
 		if (moveNum % 2 == 0) {
 			f << (moveNum / 2) + 1 << ". ";
 		}
-		f << it->notation << " ";
+		f << move.notation << " ";
 		++moveNum;
 	}
 
 	// Game can only end by stalemate or checkmate
-	GameState state = game.getState();
+	GameState state = game.getPos().getState();
 	Player player = stateToPlayer(state);
 
 	switch (stateToType(state)) {

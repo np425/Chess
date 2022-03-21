@@ -25,9 +25,8 @@ class MenuWrapper {
 
 public:
 	explicit MenuWrapper(chess::ChessGame*);
-	chess::ChessGame* getGame() const;
 
-	static EndMenuChoice readEndMenuChoice();
+    static EndMenuChoice readEndMenuChoice();
 	static TagMenuChoice readTagMenuChoice();
 	static InitialMenuChoice readStartMenuChoice();
 

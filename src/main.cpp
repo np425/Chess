@@ -5,21 +5,31 @@
 #include "pgn_file.h"
 #include "menu.h"
 #include "cli_args.h"
+#include "switch_move_notation.h"
 
 using namespace chess;
 
 GameState playChess(ChessGame& game) {
 	NotatedMove move;
-	MoveParser parser(&move.move);
+    unsigned moveNo;
+
+	MoveParser moveParser(&move.move);
+    MoveSwitchParser moveSwitchParser(&moveNo);
 
 	displayInterface(game);
 
 	while (!game.isGameOver()) {
-		std::cout << playerToString(game.getPlayer()) << " to move: ";
+		std::cout << playerToString(game.getPos().getPlayer()) << " to move: ";
 		std::cin >> move.notation;
 
-		if (!parser.parseStr(move.notation.c_str())) {
-			std::cerr << "Invalid move notation" << std::endl;
+		if (!moveParser.parseStr(move.notation.c_str())) {
+            if (!moveSwitchParser.parseStr(move.notation.c_str())) {
+                std::cerr << "Invalid move notation" << std::endl;
+                continue;
+            }
+
+            game.switchMove(moveNo);
+            displayInterface(game);
 		} else if (!game.makeMove(move)) {
 			std::cerr << "Invalid move in position" << std::endl;
 		} else {
@@ -27,7 +37,7 @@ GameState playChess(ChessGame& game) {
 		}
 	}
 
-	GameState state = game.getState();
+	GameState state = game.getPos().getState();
 	std::cout << "Game ended with " << stateToString(state)
 	   	      << " by " << playerToString(stateToPlayer(state)) << std::endl;
 

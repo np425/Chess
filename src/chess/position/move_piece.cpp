@@ -1,56 +1,57 @@
 #include "../position.h"
+#include "utils.h"
 
 namespace chess {
 
-void Position::movePiece(const Coord& from, const Coord& to, PieceType promote) {
-	Piece piece = board[from.y*BOARD_SIZE_X+from.x];
+void Position::movePiece(const Coord &from, const Coord &to, PieceType promote) {
+    Piece piece = board[from];
 
-	PieceType type = pieceToType(piece);
-	int plSign = getPlayerSign(toMove);
+    PieceType type = pieceToType(piece);
+    int plSign = getPlayerSign(toMove);
 
-	bool twoUp = false;
+    bool twoUp = false;
 
-	// Update game metadata & handle passant
-	switch (type) {
-		case PAWN: 
-			// Update passant
-			if (from.y+2*plSign == to.y) { // Two up
-				// Update passant: set it "behind" the move (-1 Y)
-				twoUp = true;
-				passant = {from.x, from.y+plSign};
-			} else if (passant.y == from.y && passant.x == to.x) { 
-				// En passant capture
-				board.clearPiece({from.y, to.x});
-			}
-			break;
-		case KING: 
-			// Eliminate castling
-			castlePerms[toMove] = CASTLES_NONE;
-			break;
-		case ROOK:
-			if (from.x == 0) {
-				// Left rook
-				castlePerms[toMove] &= ~CASTLES_QSIDE;
-			} else if (from.x == BOARD_SIZE_X - 1) {
-				// Right rook
-				castlePerms[toMove] &= ~CASTLES_KSIDE;
-			}
-			break;
-		default:
-			break;
-	}
-	
-	// Invalidate en passant opportunity
-	if (!twoUp) passant = {-1, -1};
+    // Update game metadata & handle passant
+    switch (type) {
+        case PAWN:
+            // Update passant
+            if (from.y + 2 * plSign == to.y) { // Two up
+                // Update passant: set it "behind" the move (-1 Y)
+                twoUp = true;
+                passant = {from.x, from.y + plSign};
+            } else if (passant.y == from.y && passant.x == to.x) {
+                // En passant capture
+                board.clearPiece({from.y, to.x});
+            }
+            break;
+        case KING:
+            // Eliminate castling
+            castlePerms[toMove] = CASTLES_NONE;
+            break;
+        case ROOK:
+            if (from.x == 0) {
+                // Left rook
+                castlePerms[toMove] &= ~CASTLES_QSIDE;
+            } else if (from.x == BOARD_SIZE_X - 1) {
+                // Right rook
+                castlePerms[toMove] &= ~CASTLES_KSIDE;
+            }
+            break;
+        default:
+            break;
+    }
 
-	// Handle promotion
-	Piece movePiece = (promote ? plSign * promote : piece);
+    // Invalidate en passant opportunity
+    if (!twoUp) passant = {-1, -1};
 
-	// Move the piece
-	board.clearPiece(from);
-	board.placePiece(movePiece, to);
+    // Handle promotion
+    Piece movePiece = (promote ? plSign * promote : piece);
 
-	nextTurn();
+    // Move the piece
+    board.clearPiece(from);
+    board.placePiece(movePiece, to);
+
+    nextTurn();
 }
 
 void Position::castles(CastlingSide side, Player pl) {
@@ -62,7 +63,7 @@ void Position::castles(CastlingSide side, Player pl) {
 
     // Move pieces
     board.movePiece(kPos, {kPos.x + 2 * xSign, ry});
-    board.movePiece({rx,ry}, {kPos.x + xSign, ry});
+    board.movePiece({rx, ry}, {kPos.x + xSign, ry});
 
     // Invalidate castling variables
     castlePerms[pl] = CASTLES_NONE;
@@ -71,21 +72,21 @@ void Position::castles(CastlingSide side, Player pl) {
 void Position::castles(CastlingSide side) {
     castles(side, toMove);
 
-	// Invalidate en passant opportunity
-	passant = {-1,-1};
+    // Invalidate en passant opportunity
+    passant = {-1, -1};
 
-	nextTurn();
+    nextTurn();
 }
 
 void Position::nextTurn() {
-	// Update player
-	toMove = (Player)!toMove;
+    // Update player
+    toMove = (Player) !toMove;
 
-	// Update checks
-	updateChecks(toMove);
+    // Update checks
+    updateChecks(toMove);
 
-	// Update game state for player
-	updateGameState();
+    // Update game state for player
+    updateGameState();
 }
 
 }

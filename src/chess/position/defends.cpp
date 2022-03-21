@@ -1,4 +1,5 @@
 #include "../position.h"
+#include "utils.h"
 
 namespace chess {
 
@@ -9,23 +10,23 @@ bool Position::isPathClear(const Coord& from, const Coord& to) const {
 	int xSign = numToSign(dx);
 	int ySign = numToSign(dy);
 
-	int ix = from.x + xSign;
-	int iy = from.y + ySign;
+    int x = from.x + xSign;
+    int y = from.y + ySign;
 
-	while (ix != to.x || iy != to.y) {
-		if (board[iy * BOARD_SIZE_X + ix]) {
+	while (x != to.x || y != to.y) {
+		if (board[{x,y}]) {
 			return false; // Blocking piece found
 		}
 
-		ix += xSign;
-		iy += ySign;
+        x += xSign;
+        y += ySign;
 	}
 
 	return true;
 }
 
 bool Position::defends(const Coord& from, const Coord& to) const {
-	Piece piece = board[from.y * BOARD_SIZE_Y + from.x];
+	Piece piece = board[from];
 	PieceType type = pieceToType(piece);
 	
 	// Knight ignores path
@@ -35,7 +36,7 @@ bool Position::defends(const Coord& from, const Coord& to) const {
 void Position::getDefenders(const Coord& coord, Coords& defenders, Player by) const {
 	for (int y = 0; y < BOARD_SIZE_Y; ++y) {
 		for (int x = 0; x < BOARD_SIZE_X; ++x) {
-			Piece target = board[y * BOARD_SIZE_X + x];
+			Piece target = board[{x, y}];
 			Player targetPl = pieceToPlayer(target);
 			if (targetPl != by) continue;
 

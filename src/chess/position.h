@@ -13,68 +13,69 @@ namespace chess {
 
 class Position : protected PositionInfo {
 protected:
-	Board board;
+    Board board;
 
-	/* Meta Information to improve processing speed */
-	Coords checks; // Depends on current player
+    /* Meta Information to improve processing speed */
+    Coords checks; // Depends on current player
 
-	/* Game State */
-	void updateGameState();
-	bool isStalemate(Player pl) const;
-	bool isCheckmate(Player pl) const;
-	void updateChecks(Player pl);
+    /* Game State */
+    void updateGameState();
+    bool isStalemate(Player) const;
+    bool isCheckmate(Player) const;
+    void updateChecks(Player);
 
-	bool findValidMove(MoveInfo& move, Player by) const; // Also updates MoveInfo
-	bool isPathToMoveClear(const Coord& from, const Coord& moveFrom, const Coord& moveTo) const;
-	bool isValidPawnMove(const Coord& from, const Coord& to) const;
-	bool isMovePinned(const Coord& from, const Coord& to) const;
-	bool doesMovePreventCheck(const Coord& from, const Coord& to) const;
+    bool findValidMove(MoveInfo &, Player) const; // Also updates MoveInfo
 
-	void castles(CastlingSide, Player);
+    bool isPathToMoveClear(const Coord &from, const Coord &moveFrom, const Coord &moveTo) const;
+    bool isValidPawnMove(const Coord &from, const Coord &to) const;
+    bool isMovePinned(const Coord &from, const Coord &to) const;
+    bool doesMovePreventCheck(const Coord &from, const Coord &to) const;
 
-	bool makeMove(MoveInfo& move, Player pl); // Also updates MoveInfo
+    void castles(CastlingSide, Player);
 
-	/* Turns */
-	void nextTurn();
+    /* Turns */
+    void nextTurn();
+
+    /* Moves */
+    void movePiece(const Coord &, const Coord &, PieceType promote = VOID);
+    void castles(CastlingSide);
 
 public:
-	/* Position */
-	const Board& getBoard() const;
-	Player getPlayer() const;
-	GameState getState() const;
-	const CastlingPerms& getCastlingPerms(Player pl) const;
-	const Coords& getChecks() const;
-	Coord getPassant() const;
-	bool isGameOver() const;
+    /* Position */
+    const Board &getBoard() const;
+    Player getPlayer() const;
+    GameState getState() const;
+    const CastlingPerms &getCastlingPerms(Player) const;
+    const Coords &getChecks() const;
+    Coord getPassant() const;
 
-	void getMoves(const Coord& coord, Coords& arr, Player by) const;
-	bool canMove(const Coord& from, const Coord& to) const;
-	bool canCastle(CastlingSide side, Player pl) const;
-	bool makeMove(MoveInfo& move); // Also updates MoveInfo
+    void getMoves(const Coord &, Coords &, Player) const;
+    bool canMove(const Coord &, const Coord &) const;
+    bool canCastle(CastlingSide, Player) const;
+    bool makeMove(MoveInfo &); // Also updates MoveInfo
 
-	explicit Position(Board={}, PositionInfo={});
+    explicit Position(const Piece * = DEFAULT_BOARD, PositionInfo= {});
 
-	void changePositionInfo(const PositionInfo&);
+    void setBoard(const Piece *pieces);
+    void setPositionInfo(const PositionInfo &info);
 
-	/* Board */
-	void changePosition(Board={}, PositionInfo={});
-	void changePosition(const Position& pos);
-	bool isPathClear(const Coord&, const Coord&) const;
+    /* Board */
+    void setPosition(const Piece * = DEFAULT_BOARD, PositionInfo= {});
+    bool isPathClear(const Coord &, const Coord &) const;
 
-	/* Validation */
-	bool validate();
+    /* Validation */
+    bool validate();
 
-	/* Defenders */
-	void getDefenders(const Coord& coord, Coords& arr, Player by) const;
-	bool defends(const Coord& from, const Coord& to) const;
+    /* Defenders */
+    void getDefenders(const Coord &, Coords &, Player) const;
+    bool defends(const Coord &, const Coord &) const;
 
-	/* Moves */
-	void movePiece(const Coord& from, const Coord& to, PieceType promote=VOID);
-	void castles(CastlingSide side);
+    bool makeMove(MoveInfo &, Player); // Also updates MoveInfo
+
 };
 
 /* Can piece defend regardless of current position (how pieces move) */
-bool canDefend(Piece piece, const Coord& from, const Coord& to);
+bool canDefend(Piece, const Coord &from, const Coord &to);
 
 }
 

@@ -3,23 +3,23 @@
 
 #include "notation.h"
 #include "../position.h"
+#include "chess.h"
 
 namespace chess {
 
-    class FENParser : public BasicNotationParser {
+class FENParser : public BasicNotationParser {
 protected:
-	Position* pos;
+    ChessGame *game;
 
-	int readSquare(Piece&);
-	bool readBoard(Board&);
-	int readCastlingRights(CastlingPerms[2]);
-	bool readPassant(Coord&);
+    int readSquare(Piece &);
+    bool readBoard(Piece *pieces);
+    int readCastlingRights(CastlingPerms[2]);
+    bool readPassant(Coord &);
+
+    bool parse() override;
 
 public:
-	explicit FENParser(Position*, const char* = nullptr);
-	bool parse() override;
-
-	Position* getPos() const;
+    explicit FENParser(ChessGame *);
 };
 
 }

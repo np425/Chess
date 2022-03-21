@@ -4,12 +4,7 @@
 
 namespace chess {
 
-FENParser::FENParser(Position* pos, const char* expr) : BasicNotationParser(expr), pos(pos) {
-	
-}
-
-Position* FENParser::getPos() const {
-	return pos;
+FENParser::FENParser(ChessGame* game) : game(game) {
 }
 
 int FENParser::readSquare(Piece& piece) {
@@ -31,7 +26,7 @@ int FENParser::readSquare(Piece& piece) {
 	return 1;
 }
 
-bool FENParser::readBoard(Board& board) {
+bool FENParser::readBoard(Piece* pieces) {
 	// Board reading from white's perspective
 	for (int y = BOARD_SIZE_Y - 1; y >= 0; --y) {
 		for (int x = 0; x < BOARD_SIZE_X; ) {
@@ -45,7 +40,7 @@ bool FENParser::readBoard(Board& board) {
 
 			// Populate board with appropriate amount of pieces
 			while (read > 0) {
-				board.placePiece(piece, {x,y});
+                pieces[y * BOARD_SIZE_Y + x] = piece;
 				++x;
 				--read;
 			}
@@ -104,9 +99,7 @@ bool FENParser::readPassant(Coord& sqr) {
 }
 
 bool FENParser::parse() {
-	validExpr = false;
-
-	Board board;
+	Piece* pieces;
 	PositionInfo posInfo;
 
 	while (isspace(*it)) {
@@ -114,7 +107,7 @@ bool FENParser::parse() {
 	}
 
 	// 1. Board
-	if (!readBoard(board)) {
+	if (!readBoard(pieces)) {
 		return false;
 	}
 	while (isspace(*it)) {
@@ -158,10 +151,9 @@ bool FENParser::parse() {
 		return false;
 	}
 
-	pos->changePosition(board, posInfo);
-	validExpr = true;
+    game->setPosition(pieces, posInfo);
 
-	return validExpr;
+	return true;
 }
 
 }

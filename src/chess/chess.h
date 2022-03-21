@@ -5,24 +5,37 @@
 
 namespace chess {
 
-class ChessGame : public Position {
+class ChessGame {
 	Tags tags;
 	Moves moves;
+    Moves::iterator curMove;
+    Position initialPos;
+    Position curPos;
 
 public:
-	explicit ChessGame(Board={}, PositionInfo={}, Tags={}, Moves={});
+	explicit ChessGame(const Piece* = DEFAULT_BOARD, PositionInfo = {});
 
-	Tags getTags() const;
-	Moves getMoves() const;
+	const Tags& getTags() const;
+	const Moves& getMoves() const;
+    Moves::const_iterator getCurMove() const;
+
+    const Position& getPos() const;
+
+    void setBoard(Piece*);
+    void setPosition(const Piece * = DEFAULT_BOARD, PositionInfo= {});
+    void setPositionInfo(const PositionInfo &);
 
 	bool buildPos();
+    bool switchMove(unsigned);
 
 	void updateTag(Tag);
 	bool makeMove(NotatedMove);
 
-	void setTags(Tags);
 	void addTags(Tags);
 	void setMoves(Moves);
+
+    bool isGameOver();
+    bool validate();
 };
 
 }

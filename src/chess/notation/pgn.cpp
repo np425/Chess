@@ -4,11 +4,7 @@
 
 namespace chess {
 
-PGNParser::PGNParser(ChessGame* game, const char* expr) : BasicNotationParser(expr), game(game) {
-}
-
-ChessGame* PGNParser::getGame() const {
-	return game;
+PGNParser::PGNParser(ChessGame* game) : game(game) {
 }
 
 bool PGNParser::readTag(Tag& tag) {
@@ -130,10 +126,10 @@ bool PGNParser::readMove(NotatedMove& move) {
 	// Clear to not append to move notation read prior
 	move.notation.clear();
 
-	MoveParser moveParser(&move.move, it);
+	MoveParser moveParser(&move.move);
 
 	// Comments inclusive
-	if (!moveParser.parse()) {
+	if (!moveParser.parseStr(it)) {
 		return false;
 	}
 

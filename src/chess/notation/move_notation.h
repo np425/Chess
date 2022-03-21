@@ -18,11 +18,11 @@ class MoveParser : public BasicNotationParser {
 	bool readCastling(CastlingSide&);
 	bool readMove(MoveInfo&);
 
-public:
-	explicit MoveParser(MoveInfo*, const char* = nullptr);
-	bool parse() override;
+    bool parse() override;
 
-	MoveInfo* getMove() const;
+public:
+	explicit MoveParser(MoveInfo*);
+
 };
 
 }

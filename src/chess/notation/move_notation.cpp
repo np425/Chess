@@ -4,11 +4,7 @@
 
 namespace chess {
 
-MoveParser::MoveParser(MoveInfo* move, const char* expr) : BasicNotationParser(expr), move(move) {
-}
-
-MoveInfo* MoveParser::getMove() const {
-	return move;
+MoveParser::MoveParser(MoveInfo* move) : move(move) {
 }
 
 bool MoveParser::readPromoteType(PieceType& promote) {
@@ -142,8 +138,6 @@ bool MoveParser::readMove(MoveInfo& theMove) {
 }	
 
 bool MoveParser::parse() {
-	validExpr = false;
-
 	while (isspace(*it)) {
 		++it;
 	}
@@ -179,8 +173,7 @@ bool MoveParser::parse() {
 		it = tempIt;
 	}
 
-	validExpr = true;
-	return validExpr;
-}	
+    return true;
+}
 
 }

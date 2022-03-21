@@ -42,12 +42,10 @@ class CLIArgParser {
 public:
 	CLIArgParser(chess::ChessGame*, int, const char**);
 
-	chess::ChessGame* getGame() const;
-	std::string getSaveFileName() const;
+    std::string getSaveFileName() const;
 
 	bool valid() const;
 	bool hasArgs() const;
-	bool hasSaveFileName() const;
 
 	bool parse();
 };

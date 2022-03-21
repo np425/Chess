@@ -1,4 +1,5 @@
 #include "../position.h"
+#include "utils.h"
 
 namespace chess {
 bool Position::validate() {
@@ -16,18 +17,17 @@ bool Position::validate() {
 	}
 
 	// Passant
-	if (passant.x != -1) {
+	if (passant) {
 		int sign = getPlayerSign(toMove);
 	
-		int coord = (passant.y + sign) * BOARD_SIZE_X + passant.x;
-		Piece piece = board[coord];
+		Piece piece = board[{passant.x, passant.y+sign}];
 		PieceType type = pieceToType(piece);
 		Player targetPl = pieceToPlayer(piece);
 
 		// Piece in passant location has to be enemy pawn
 		if (type != PAWN || targetPl != (Player)!toMove) {
 			// Invalidate passant
-			passant = {-1,-1};
+            passant.invalidate();
 		}
 	}	
 

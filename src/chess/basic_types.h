@@ -41,6 +41,22 @@ typedef int CastlingPerms;
 struct Coord {
 	int x;
 	int y;
+
+    bool operator==(const Coord& other) const {
+        return x == other.x && y == other.y;
+    }
+
+    bool operator!=(const Coord& other) const {
+        return !operator==(other);
+    }
+
+    explicit operator bool() const {
+        return x >= 0 && y >= 0;
+    }
+
+    void invalidate() {
+        x = y = -1;
+    }
 };
 
 enum class CheckType {
