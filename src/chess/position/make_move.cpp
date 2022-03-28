@@ -4,7 +4,7 @@
 namespace chess {
 
 bool Position::findValidMove(MoveInfo& move, Player by) const {
-	if (move.to.y == -1 || move.to.x == -1) {
+	if (!move.to) {
 		// Must be absolute target square coordinates
 		return false; 
 	}
