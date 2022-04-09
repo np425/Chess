@@ -8,11 +8,11 @@
 #include "chess/notation/notation.h"
 
 class MoveSwitchParser : public chess::BasicNotationParser {
-    unsigned* moveNo;
+    unsigned *moveNo;
 
     bool parse() override;
 public:
-    explicit MoveSwitchParser(unsigned*);
+    explicit MoveSwitchParser(unsigned *);
 };
 
 #endif //CHESS_SWITCH_MOVE_NOTATION_H

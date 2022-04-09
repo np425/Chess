@@ -6,7 +6,7 @@
 #define FEN_L_ARG "--FEN"
 #define FEN_S_ARG "-F"
 
-#define PGN_L_ARG "--PGN" 
+#define PGN_L_ARG "--PGN"
 #define PGN_S_ARG "-P"
 
 #define DEF_L_ARG "--DEF"
@@ -19,35 +19,35 @@
 #define SAVE_S_ARG "-S"
 
 enum CLIArg {
-	ARG_NONE = 0, ARG_DEF_POS = 1, ARG_FEN, ARG_PGN, ARG_TAG, ARG_SAVE
+    ARG_NONE = 0, ARG_DEF_POS = 1, ARG_FEN, ARG_PGN, ARG_TAG, ARG_SAVE
 };
 
-CLIArg strToArg(const char*);
+CLIArg strToArg(const char *);
 
 class CLIArgParser {
-	std::string save;
-	chess::ChessGame* game;
-	const int argc;
-	const char** argv;
-	const char** it;
-	const char** end;
-	bool validArgs = false;
+    std::string save;
+    chess::ChessGame *game;
+    const int argc;
+    const char **argv;
+    const char **it;
+    const char **end;
+    bool validArgs = false;
 
-	bool readFEN();
-	bool readFileName(std::string&);
-	bool readPGN();
-	bool readTag(chess::Tag&, const char*&);
-	bool readTags();
+    bool readFEN();
+    bool readFileName(std::string &);
+    bool readPGN();
+    bool readTag(chess::Tag &, const char *&);
+    bool readTags();
 
 public:
-	CLIArgParser(chess::ChessGame*, int, const char**);
+    CLIArgParser(chess::ChessGame *, int, const char **);
 
     std::string getSaveFileName() const;
 
-	bool valid() const;
-	bool hasArgs() const;
+    bool valid() const;
+    bool hasArgs() const;
 
-	bool parse();
+    bool parse();
 };
 
 #endif

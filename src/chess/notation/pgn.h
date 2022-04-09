@@ -7,23 +7,23 @@
 namespace chess {
 
 class PGNParser : public BasicNotationParser {
-	ChessGame* game;
+    ChessGame *game;
 
-	// Tags
-	bool readTag(Tag&);
-	bool readTags(Tags&);
+    // Tags
+    bool readTag(Tag &);
+    bool readTags(Tags &);
 
-	// Moves
-	bool readMoveNum(unsigned&);
-	bool readMove(NotatedMove&);
-	bool readMoves(Moves&, unsigned&);
+    // Moves
+    bool readMoveNum(unsigned &);
+    bool readMove(NotatedMove &);
+    bool readMoves(Moves &, unsigned &);
 
     bool parse() override;
 
-	// Result
-	bool readResult(GameState&, unsigned);
+    // Result
+    bool readResult(GameState &, unsigned);
 public:
-	explicit PGNParser(ChessGame*);
+    explicit PGNParser(ChessGame *);
 
 };
 

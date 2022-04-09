@@ -4,7 +4,7 @@
 namespace chess {
 
 ChessGame::ChessGame(const Piece *pieces, PositionInfo posInfo) : initialPos(pieces, posInfo), curPos(pieces, posInfo),
-                                                                  curMove(moves.end()) {}
+                                                                  curMove(moves.end()) { }
 
 const Tags &ChessGame::getTags() const {
     return tags;

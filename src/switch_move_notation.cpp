@@ -17,4 +17,4 @@ bool MoveSwitchParser::parse() {
     return readUnsignedInt(*moveNo);
 }
 
-MoveSwitchParser::MoveSwitchParser(unsigned* move) : moveNo(move) {}
+MoveSwitchParser::MoveSwitchParser(unsigned *move) : moveNo(move) { }

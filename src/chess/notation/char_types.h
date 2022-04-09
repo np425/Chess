@@ -3,7 +3,7 @@
 
 #include "../basic_types.h"
 
-namespace chess {	
+namespace chess {
 
 PieceType charToType(char chr);
 

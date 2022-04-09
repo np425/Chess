@@ -28,7 +28,7 @@ public:
     explicit Board(const Piece * = DEFAULT_BOARD);
 
     Piece operator[](unsigned) const;
-    Piece operator[](const Coord&) const;
+    Piece operator[](const Coord &) const;
 
     Coord getKingPos(Player) const;
 

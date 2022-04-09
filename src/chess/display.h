@@ -9,17 +9,17 @@
 namespace chess {
 
 char pieceToChar(Piece);
-const char* stateToString(GameState);
-const char* playerToString(Player);
+const char *stateToString(GameState);
+const char *playerToString(Player);
 
-void displayBoard(const Board&);
-void displayPosInfo(const Position&);
-void displayPieces(const Board&, const Coords&);
+void displayBoard(const Board &);
+void displayPosInfo(const Position &);
+void displayPieces(const Board &, const Coords &);
 
-void displayMoveInfo(const MoveInfo&);
-void displayTags(const Tags&);
+void displayMoveInfo(const MoveInfo &);
+void displayTags(const Tags &);
 
-void displayInterface(const ChessGame&);
+void displayInterface(const ChessGame &);
 
 }
 

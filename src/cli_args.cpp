@@ -7,244 +7,244 @@
 
 using namespace chess;
 
-CLIArg strToArg(const char* str) {
-	if (strcmp(str, FEN_L_ARG) == 0 || strcmp(str, FEN_S_ARG) == 0) {
-		return ARG_FEN;
-	} else if (strcmp(str, PGN_L_ARG) == 0 || strcmp(str, PGN_S_ARG) == 0) {
-		return ARG_PGN;
-	} else if (strcmp(str, DEF_L_ARG) == 0 || strcmp(str, DEF_S_ARG) == 0) {
-		return ARG_DEF_POS;
-	} else if (strcmp(str, TAG_L_ARG) == 0 || strcmp(str, TAG_S_ARG) == 0) {
-		return ARG_TAG;
-	} else if (strcmp(str, SAVE_L_ARG) == 0 || strcmp(str, SAVE_S_ARG) == 0) {
-		return ARG_SAVE;
-	} else {
-		return ARG_NONE;
-	}
+CLIArg strToArg(const char *str) {
+    if (strcmp(str, FEN_L_ARG) == 0 || strcmp(str, FEN_S_ARG) == 0) {
+        return ARG_FEN;
+    } else if (strcmp(str, PGN_L_ARG) == 0 || strcmp(str, PGN_S_ARG) == 0) {
+        return ARG_PGN;
+    } else if (strcmp(str, DEF_L_ARG) == 0 || strcmp(str, DEF_S_ARG) == 0) {
+        return ARG_DEF_POS;
+    } else if (strcmp(str, TAG_L_ARG) == 0 || strcmp(str, TAG_S_ARG) == 0) {
+        return ARG_TAG;
+    } else if (strcmp(str, SAVE_L_ARG) == 0 || strcmp(str, SAVE_S_ARG) == 0) {
+        return ARG_SAVE;
+    } else {
+        return ARG_NONE;
+    }
 }
 
-CLIArgParser::CLIArgParser(ChessGame* game, const int argc, const char** argv) 
-: game(game), argc(argc), argv(argv), it(argv), end(argv+argc) {
+CLIArgParser::CLIArgParser(ChessGame *game, const int argc, const char **argv)
+        : game(game), argc(argc), argv(argv), it(argv), end(argv + argc) {
 }
 
 std::string CLIArgParser::getSaveFileName() const {
-	return save;
+    return save;
 }
 
 bool CLIArgParser::valid() const {
-	return validArgs;
+    return validArgs;
 }
 
 bool CLIArgParser::hasArgs() const {
-	return argc > 1;
+    return argc > 1;
 }
 
 bool CLIArgParser::parse() {
-	bool posSelected = false;
-	bool saveToFileArg = false;
-	validArgs = false;
+    bool posSelected = false;
+    bool saveToFileArg = false;
+    validArgs = false;
 
-	// Skips first argument, which is program name
-	++it;
+    // Skips first argument, which is program name
+    ++it;
 
-	if (it >= end) {
-		return false;
-	}
+    if (it >= end) {
+        return false;
+    }
 
-	while (it < end) {
-		CLIArg argName = strToArg(*it);
-		++it;
-		switch (argName) {
-			case ARG_DEF_POS:
-				if (posSelected) {
-					std::cerr << "Can't select multiple initial positions" << std::endl;
-					return false;
-				}
+    while (it < end) {
+        CLIArg argName = strToArg(*it);
+        ++it;
+        switch (argName) {
+            case ARG_DEF_POS:
+                if (posSelected) {
+                    std::cerr << "Can't select multiple initial positions" << std::endl;
+                    return false;
+                }
                 game->setPosition();
-				posSelected = true;
-				break;
-			case ARG_FEN:
-				if (posSelected) {
-					std::cerr << "Can't select multiple initial positions" << std::endl;
-					return false;
-				}
-				if (!readFEN()) {
-					std::cerr << "Failed to load FEN" << std::endl;
-					return false;
-				}
-				posSelected = true;
-				break;
-			case ARG_PGN:
-				if (posSelected) {
-					std::cerr << "Can't select multiple initial positions" << std::endl;
-					return false;
-				}
-				if (!readPGN()) {
-					std::cerr << "Failed to load PGN" << std::endl;
-					return false;
-				}
-				posSelected = true;
-				break;
-			case ARG_TAG:
-				if (!readTags()) {
-					std::cerr << "Failed to load tags" << std::endl;
-					return false;
-				}
-				break;
-			case ARG_SAVE:
-				if (saveToFileArg) {
+                posSelected = true;
+                break;
+            case ARG_FEN:
+                if (posSelected) {
+                    std::cerr << "Can't select multiple initial positions" << std::endl;
+                    return false;
+                }
+                if (!readFEN()) {
+                    std::cerr << "Failed to load FEN" << std::endl;
+                    return false;
+                }
+                posSelected = true;
+                break;
+            case ARG_PGN:
+                if (posSelected) {
+                    std::cerr << "Can't select multiple initial positions" << std::endl;
+                    return false;
+                }
+                if (!readPGN()) {
+                    std::cerr << "Failed to load PGN" << std::endl;
+                    return false;
+                }
+                posSelected = true;
+                break;
+            case ARG_TAG:
+                if (!readTags()) {
+                    std::cerr << "Failed to load tags" << std::endl;
+                    return false;
+                }
+                break;
+            case ARG_SAVE:
+                if (saveToFileArg) {
                     std::cerr << "Only one file can be selected for saving" << std::endl;
                     return false;
                 }
                 saveToFileArg = true;
 
-				if (!readFileName(save)) {
-					std::cerr << "Failed to read save file name" << std::endl;
-					return false;
-				}
+                if (!readFileName(save)) {
+                    std::cerr << "Failed to read save file name" << std::endl;
+                    return false;
+                }
                 break;
-			default:
-				std::cerr << "Unknown argument: " << *(it-1) << std::endl;
-				return false;
-		}
-	}
-	validArgs = true;
-	return true;
+            default:
+                std::cerr << "Unknown argument: " << *(it - 1) << std::endl;
+                return false;
+        }
+    }
+    validArgs = true;
+    return true;
 }
 
 bool CLIArgParser::readTags() {
-	Tags tags;
-	const char* argIt = *it;
+    Tags tags;
+    const char *argIt = *it;
 
-	while (it < end && strToArg(*it) == ARG_NONE) {
-		Tag tag;
-		if (!readTag(tag, argIt)) {
-			return false;
-		}
+    while (it < end && strToArg(*it) == ARG_NONE) {
+        Tag tag;
+        if (!readTag(tag, argIt)) {
+            return false;
+        }
 
-		if (tags.find(tag.first) == tags.end()) {
-			tags.insert(tag);
-		} else {
-			tags[tag.first] = tag.second;
-		}
-	}
+        if (tags.find(tag.first) == tags.end()) {
+            tags.insert(tag);
+        } else {
+            tags[tag.first] = tag.second;
+        }
+    }
 
-	if (tags.empty()) {
-		// No tag has been read
-		return false;
-	}
+    if (tags.empty()) {
+        // No tag has been read
+        return false;
+    }
 
-	game->addTags(tags);
+    game->addTags(tags);
 
-	return true;
+    return true;
 }
 
-bool CLIArgParser::readTag(Tag& tag, const char*& argIt) {
-	auto tagIt = tag.first.begin();
+bool CLIArgParser::readTag(Tag &tag, const char *&argIt) {
+    auto tagIt = tag.first.begin();
 
-	while (it < end && strToArg(argIt) == ARG_NONE) {
-		while (*argIt && *argIt != ':') {
-			*(tagIt++) = *(argIt++);
-		}
+    while (it < end && strToArg(argIt) == ARG_NONE) {
+        while (*argIt && *argIt != ':') {
+            *(tagIt++) = *(argIt++);
+        }
 
-		if (tagIt != tag.first.begin()) {
-			*(tagIt++) = ' ';
-		}
+        if (tagIt != tag.first.begin()) {
+            *(tagIt++) = ' ';
+        }
 
-		if (*argIt == ':') {
-			++argIt;
-			break;
-		}
+        if (*argIt == ':') {
+            ++argIt;
+            break;
+        }
 
-		argIt = *(++it);
-	}
+        argIt = *(++it);
+    }
 
-	if (tag.first.empty()) {
-		return false;
-	}
+    if (tag.first.empty()) {
+        return false;
+    }
 
-	tagIt = tag.second.begin();
-	while (it < end && strToArg(argIt) == ARG_NONE) {
-		while (*argIt && *argIt != ',') {
-			*(tagIt++) = *(argIt++);
-		}
+    tagIt = tag.second.begin();
+    while (it < end && strToArg(argIt) == ARG_NONE) {
+        while (*argIt && *argIt != ',') {
+            *(tagIt++) = *(argIt++);
+        }
 
-		if (tagIt != tag.second.begin()) {
-			*(tagIt++) = ' ';
-		}
+        if (tagIt != tag.second.begin()) {
+            *(tagIt++) = ' ';
+        }
 
-		if (*argIt == ',') {
-			++argIt;
-			break;
-		}
+        if (*argIt == ',') {
+            ++argIt;
+            break;
+        }
 
-		argIt = *(++it);
-	}
+        argIt = *(++it);
+    }
 
-	if (tag.second.empty()) {
-		return false;
-	}
+    if (tag.second.empty()) {
+        return false;
+    }
 
-	return true;
+    return true;
 }
 
 bool CLIArgParser::readPGN() {
-	std::string fileName;
-	if (!readFileName(fileName)) {
-		return false;
-	}
-	
-	return loadPGNFromFile(fileName, *game);
+    std::string fileName;
+    if (!readFileName(fileName)) {
+        return false;
+    }
+
+    return loadPGNFromFile(fileName, *game);
 }
 
 bool CLIArgParser::readFEN() {
-	std::string notation;
+    std::string notation;
 
-	while (it < end && strToArg(*it) == ARG_NONE) {
-		for (const char* argIt = *it; *argIt; ++argIt) {
-			notation += *argIt;
-		}
-		notation += ' ';
-		++it;
-	}
+    while (it < end && strToArg(*it) == ARG_NONE) {
+        for (const char *argIt = *it; *argIt; ++argIt) {
+            notation += *argIt;
+        }
+        notation += ' ';
+        ++it;
+    }
 
-	if (notation.empty()) {
-		// No notation has been read
-		return false;
-	}
+    if (notation.empty()) {
+        // No notation has been read
+        return false;
+    }
 
-	// Remove space
-	notation.pop_back();
+    // Remove space
+    notation.pop_back();
 
-	Position pos;
-	FENParser fen(game);
+    Position pos;
+    FENParser fen(game);
 
-	if (!fen.parseStr(notation.c_str())) {
-		return false;
-	}
+    if (!fen.parseStr(notation.c_str())) {
+        return false;
+    }
 
-	return true;
+    return true;
 }
 
-bool CLIArgParser::readFileName(std::string& fileName) {
-	while (it < end && strToArg(*it) == ARG_NONE) {
-		for (const char* argIt = *it; *argIt; ++argIt) {
-			fileName += *argIt;
-		}
+bool CLIArgParser::readFileName(std::string &fileName) {
+    while (it < end && strToArg(*it) == ARG_NONE) {
+        for (const char *argIt = *it; *argIt; ++argIt) {
+            fileName += *argIt;
+        }
 
-		fileName += ' ';
+        fileName += ' ';
 
-		++it;
-	}
+        ++it;
+    }
 
-	if (fileName.empty()) {
-		// No file name has been read
-		return false;
-	}
+    if (fileName.empty()) {
+        // No file name has been read
+        return false;
+    }
 
-	// Remove space
-	fileName.pop_back();
+    // Remove space
+    fileName.pop_back();
 
-	return true;
+    return true;
 }
 

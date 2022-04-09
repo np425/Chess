@@ -12,25 +12,25 @@
 namespace chess {
 
 enum PieceType {
-	VOID=0, ROOK, KNIGHT, BISHOP, QUEEN, KING, PAWN
+    VOID = 0, ROOK, KNIGHT, BISHOP, QUEEN, KING, PAWN
 };
 
 enum Player {
-	WHITE = 0, BLACK, PL_NONE
+    WHITE = 0, BLACK, PL_NONE
 };
 
 enum GameStateType {
-	PLAYING = 0,
-	WIN, // Resignation
-	CHECKMATE,
-	DRAW,
-	STALEMATE
+    PLAYING = 0,
+    WIN, // Resignation
+    CHECKMATE,
+    DRAW,
+    STALEMATE
 };
 
 enum CastlingSide {
-	CASTLES_NONE  = 0,
-	CASTLES_QSIDE = 1, 
-	CASTLES_KSIDE = 2,
+    CASTLES_NONE = 0,
+    CASTLES_QSIDE = 1,
+    CASTLES_KSIDE = 2,
 };
 
 /* + for White, - for Black, 0 for neutral */
@@ -39,14 +39,14 @@ typedef int GameState;
 typedef int CastlingPerms;
 
 struct Coord {
-	int x;
-	int y;
+    int x;
+    int y;
 
-    bool operator==(const Coord& other) const {
+    bool operator==(const Coord &other) const {
         return x == other.x && y == other.y;
     }
 
-    bool operator!=(const Coord& other) const {
+    bool operator!=(const Coord &other) const {
         return !operator==(other);
     }
 
@@ -60,32 +60,32 @@ struct Coord {
 };
 
 enum class CheckType {
-	None, Check, Checkmate
+    None, Check, Checkmate
 };
 
 struct MoveInfo {
-	// bool drawOffer;
-	// bool resignation;
+    // bool drawOffer;
+    // bool resignation;
 
-	PieceType type;
-	PieceType promote;
+    PieceType type;
+    PieceType promote;
 
-	// Previous piece coordinates: where piece is
-	Coord from;
+    // Previous piece coordinates: where piece is
+    Coord from;
 
-	// Move coordinates: where piece is moving
-	Coord to;
+    // Move coordinates: where piece is moving
+    Coord to;
 
-	// If piece is capturing a piece
-	bool capture;
+    // If piece is capturing a piece
+    bool capture;
 
-	CheckType checks;
-	CastlingSide castles;
+    CheckType checks;
+    CastlingSide castles;
 };
 
 struct NotatedMove {
-	MoveInfo move;
-	std::string notation;
+    MoveInfo move;
+    std::string notation;
 };
 
 typedef std::pair<std::string, std::string> Tag;
@@ -94,15 +94,15 @@ typedef std::vector<Coord> Coords;
 typedef std::vector<NotatedMove> Moves;
 
 struct PositionInfo {
-	Player toMove = WHITE;
-	GameState state = PLAYING;
-	CastlingPerms castlePerms[2] = {
-		CASTLES_KSIDE | CASTLES_QSIDE, 
-		CASTLES_KSIDE | CASTLES_QSIDE
-	};
-	Coord passant = {-1,-1};
-	unsigned fullMoves = 0;
-	unsigned halfMoves = 0;
+    Player toMove = WHITE;
+    GameState state = PLAYING;
+    CastlingPerms castlePerms[2] = {
+            CASTLES_KSIDE | CASTLES_QSIDE,
+            CASTLES_KSIDE | CASTLES_QSIDE
+    };
+    Coord passant = {-1, -1};
+    unsigned fullMoves = 0;
+    unsigned halfMoves = 0;
 };
 
 }

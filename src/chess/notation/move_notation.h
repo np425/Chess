@@ -7,21 +7,21 @@
 namespace chess {
 
 class MoveParser : public BasicNotationParser {
-	MoveInfo* move;
+    MoveInfo *move;
 
-	int readCoordPoints(Coord&);
-	bool readPromoteType(PieceType&);	
-	bool readPromoteSymbol();
-	bool readCaptureSymbol();
-	bool readChecks(CheckType& checks);
-	int readComment();
-	bool readCastling(CastlingSide&);
-	bool readMove(MoveInfo&);
+    int readCoordPoints(Coord &);
+    bool readPromoteType(PieceType &);
+    bool readPromoteSymbol();
+    bool readCaptureSymbol();
+    bool readChecks(CheckType &checks);
+    int readComment();
+    bool readCastling(CastlingSide &);
+    bool readMove(MoveInfo &);
 
     bool parse() override;
 
 public:
-	explicit MoveParser(MoveInfo*);
+    explicit MoveParser(MoveInfo *);
 
 };
 
