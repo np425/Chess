@@ -1,35 +1,20 @@
-#include "chess/notation/pgn.h"
 #include "pgn_file.h"
-#include "utils.h"
-#include <fstream>
-#include <sstream>
+#include "chessl/pgn.h"
+#include <iostream>
 
 using namespace chess;
 
-bool loadPGNFromFile(const std::string &fileName, ChessGame &game) {
-    std::ifstream f(fileName);
-    if (!f) {
-        return false;
-    }
+bool loadPGNFromFile(std::istream &f, ChessGame &game) {
+    std::string pgn((std::istreambuf_iterator<char>(f)), std::istreambuf_iterator<char>());
+    const char *it = pgn.c_str();
 
-    std::string pgn;
-    std::stringstream buffer;
-    buffer << f.rdbuf();
-    pgn = buffer.str();
-
-    PGNParser parser(&game);
-    return parser.parseStr(pgn.c_str());
+    return PGNParser::parsePGN(game, it);
 }
 
-bool savePGNToFile(const std::string &fileName, const ChessGame &game) {
-    std::ofstream f(fileName);
+bool savePGNToFile(std::ostream &f, const ChessGame &game) {
+    const TagsMap &tags = game.getTags();
 
-    if (!f) {
-        return false;
-    }
-
-    Tags tags = game.getTags();
-    for (auto &tag: tags) {
+    for (const auto &tag: tags) {
         f << "[" << tag.first << " \"" << tag.second << "\"]" << std::endl;
     }
 
@@ -37,9 +22,9 @@ bool savePGNToFile(const std::string &fileName, const ChessGame &game) {
         f << std::endl;
     }
 
-    unsigned moveNum = 0;
+    int moveNum = 0;
 
-    Moves moves = game.getMoves();
+    MovesList moves = game.getMovesList();
     for (auto &move: moves) {
         if (moveNum % 2 == 0) {
             f << (moveNum / 2) + 1 << ". ";
@@ -49,7 +34,7 @@ bool savePGNToFile(const std::string &fileName, const ChessGame &game) {
     }
 
     // Game can only end by stalemate or checkmate
-    GameState state = game.getPos().getState();
+    State state = game.getState();
     Player player = stateToPlayer(state);
 
     switch (stateToType(state)) {
@@ -66,8 +51,6 @@ bool savePGNToFile(const std::string &fileName, const ChessGame &game) {
         case PLAYING:
             f << "1/2-1/2";
             break;
-        default:
-            f << "???";
     }
 
     f << std::endl;
