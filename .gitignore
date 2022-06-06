@@ -47,7 +47,7 @@ _deps
 Build/
 cmake-build-*/
 
-Chess
+old
 
 # Visual Studio Code
 .vscode/
