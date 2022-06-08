@@ -15,7 +15,7 @@ Coord Position::findDefender(Coord it, const Coord &target, Player by) const noe
 
 CoordVector Position::getDefenders(const Coord &target, Player by) const noexcept {
     CoordVector defenders;
-    defenders.reserve(MAX_MOVES_PER_SQUARE);
+//    defenders.reserve(MAX_MOVES_PER_SQUARE);
 
     Coord it{0, 0};
     while ((it = findDefender(it, target, by)) != literals::END_COORD) {

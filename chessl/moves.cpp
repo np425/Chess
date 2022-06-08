@@ -234,7 +234,7 @@ Coord Position::findValidMove(Coord it, const Coord &target, Player by) const no
 
 CoordVector Position::getMoves(const Coord &to, Player by) const noexcept {
     CoordVector moves;
-    moves.reserve(MAX_MOVES_PER_SQUARE);
+//    moves.reserve(MAX_MOVES_PER_SQUARE);
 
     Coord it{0, 0};
     while ((it = findValidMove(it, to, by)) != literals::END_COORD) {

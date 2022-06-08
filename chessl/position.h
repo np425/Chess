@@ -2,7 +2,8 @@
 #define CHESSL_POSITION_H
 
 #include <utility>
-#include <vector>
+//#include <vector>
+#include "stack_vector.h"
 #include "board.h"
 
 // TODO: Vector vs StackVector performance
@@ -58,7 +59,7 @@ typedef int CastlingPerms;
     return PL_NONE;
 }
 
-typedef std::vector<Coord> CoordVector;
+typedef StackVector<Coord, MAX_MOVES_PER_SQUARE> CoordVector;
 
 class Position {
 protected:

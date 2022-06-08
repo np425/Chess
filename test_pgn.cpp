@@ -25,6 +25,8 @@ int main() {
         return 1;
     }
 
+    printBoard(game.getBoard());
+
     if (!game.validate()) {
         std::cerr << "Failed to validate the game!" << std::endl;
         return 1;

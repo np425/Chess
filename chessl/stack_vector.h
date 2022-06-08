@@ -5,48 +5,52 @@
 #ifndef CHESSL_STACK_VECTOR_H
 #define CHESSL_STACK_VECTOR_H
 
-#include <array>
 #include <algorithm>
+#include <array>
 
 // TODO: Benchmark vector vs StackVector performance
 
+namespace chess {
+
 template<class T, std::size_t Size>
 class StackVector {
-    std::array<T, Size> arr_;
-    typedef typename std::array<T,Size>::iterator iterator;
+    std::array<T, Size> arr_{};
+    typedef typename std::array<T, Size>::iterator iterator;
     iterator arr_end_;
 
 public:
-//    constexpr explicit StackVector(std::array<T, Size> arr) noexcept : arr_{arr}, arr_end_{arr_.begin()} {
-//    }
+    //    constexpr explicit StackVector(std::array<T, Size> arr) noexcept : arr_{arr}, arr_end_{arr_.begin()} {
+    //    }
 
-    constexpr StackVector() noexcept : arr_{}, arr_end_{arr_.begin()} {
+    constexpr StackVector() noexcept : arr_end_{arr_.begin()} {
     }
 
-    constexpr StackVector(const StackVector& other) noexcept {
+    constexpr StackVector(const StackVector &other) noexcept {
         arr_end_ = arr_.begin() + other.size();
-        std::copy((iterator)other.arr_.begin(), other.arr_end_, arr_.begin());
+        std::copy((iterator) other.arr_.begin(), other.arr_end_, arr_.begin());
     }
 
     ~StackVector() = default;
 
-    constexpr StackVector &operator=(StackVector &&other) noexcept {
-        if (this == &other) {
-            return *this;
-        }
+    // TODO: Implement proper move constructor
+//    constexpr StackVector &operator=(StackVector &other) noexcept {
+//        if (this == &other) {
+//            return *this;
+//        }
+//
+//        *this = *other;
+////        arr_ = other.arr_;
+////        arr_end_ = other.arr_end_;
+//        return *this;
+//    }
 
-        arr_ = other.arr_;
-        arr_end_ = other.arr_end_;
-        return *this;
-    }
-
-    constexpr StackVector& operator=(const StackVector &other) noexcept {
+    constexpr StackVector &operator=(const StackVector &other) noexcept {
         if (this == &other) {
             return *this;
         }
 
         arr_end_ = arr_.begin() + other.size();
-        std::copy((iterator)other.arr_.begin(), other.arr_end_, arr_.begin());
+        std::copy((iterator) other.arr_.begin(), other.arr_end_, arr_.begin());
         return *this;
     }
 
@@ -94,9 +98,9 @@ public:
         return arr_end_ == arr_.begin();
     }
 
-//    [[nodiscard]] constexpr explicit operator bool() const noexcept {
-//        return arr_.begin() - arr_end_;
-//    }
+    //    [[nodiscard]] constexpr explicit operator bool() const noexcept {
+    //        return arr_.begin() - arr_end_;
+    //    }
 
     [[nodiscard]] constexpr std::size_t size() const noexcept {
         return arr_end_ - arr_.begin();
@@ -107,7 +111,7 @@ public:
     }
 
     template<class... Args>
-    constexpr T &emplace_back(Args &&... args) noexcept {
+    constexpr T &emplace_back(Args &&...args) noexcept {
         return push_back(std::forward<Args>(args)...);
     }
 
@@ -116,4 +120,6 @@ public:
     }
 };
 
-#endif //CHESSL_STACK_VECTOR_H
+}
+
+#endif//CHESSL_STACK_VECTOR_H

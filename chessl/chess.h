@@ -36,7 +36,7 @@ public:
         m_tags(std::move(tags)), m_moves(std::move(moves)), m_initialPos(initialPos) {
     }
 
-    constexpr bool makeMove(NotatedMove &notatedMove) noexcept {
+    bool makeMove(NotatedMove &notatedMove) noexcept {
         if (!Position::makeMove(notatedMove)) {
             return false;
         }
@@ -45,7 +45,7 @@ public:
         return true;
     }
 
-    constexpr bool makeMove(MoveInfo &moveInfo) noexcept override {
+    bool makeMove(MoveInfo &moveInfo) noexcept override {
         if (!Position::makeMove(moveInfo)) {
             return false;
         }
