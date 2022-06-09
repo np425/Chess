@@ -1,7 +1,3 @@
-//
-// Created by np on 22.5.26.
-//
-
 #ifndef CHESSL_STACK_VECTOR_H
 #define CHESSL_STACK_VECTOR_H
 
