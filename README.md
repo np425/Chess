@@ -1,15 +1,14 @@
 # Chess
-Simple chess game written in C++ from scratch
+Simple chess game & chess game library written in C++ from scratch
 
 ---
 ## Compilation
 
 ### Unix (MacOS/Linux)
-1. `cd src/`
-2. Make a new folder for building, `cd folder/`
-3. Build CMake project `cmake --build ..`
-4. Compile chess `make`
-5. Enjoy `./Chess`
+1. Change directory to an empty folder
+2. Build CMake project `cmake -S <root directory> -B <empty folder>`
+3. Compile chess `make`
+4. Enjoy `./ChessGame`
 
 ### Windows
 Just load the CMake project with IDE like Visual Studio or CLion
